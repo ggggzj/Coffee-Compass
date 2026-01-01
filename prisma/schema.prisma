@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Shop {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  city      String
+  latitude  Float
+  longitude Float
+  rating    Float    @default(0)
+  priceLevel Int     @default(1)
+  tags      String[]
+  features  Json     // { noise, outlets, wifi, seating, lighting, privacy } all 1-5
+  createdAt DateTime @default(now())
+
+  @@index([city])
+  @@index([latitude, longitude])
+}
+
