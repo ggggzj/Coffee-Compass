@@ -113,7 +113,7 @@ export default function ShopDrawer({ shopId, scene, onClose }: ShopDrawerProps) 
   return (
     <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 overflow-y-auto">
       <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-900">咖啡店详情</h2>
+        <h2 className="text-xl font-bold text-gray-900">Coffee Shop Details</h2>
         <button
           onClick={onClose}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -150,7 +150,7 @@ export default function ShopDrawer({ shopId, scene, onClose }: ShopDrawerProps) 
 
         {shop.tags && shop.tags.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">标签</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Tags</h4>
             <div className="flex flex-wrap gap-2">
               {shop.tags.map((tag: string) => (
                 <span
@@ -167,20 +167,20 @@ export default function ShopDrawer({ shopId, scene, onClose }: ShopDrawerProps) 
         {suitability && (
           <div className="border-t border-gray-200 pt-6">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              适用性评分: {suitability.score}/100
+              Suitability Score: {suitability.score}/100
             </h4>
             <p className="text-sm text-gray-600 mb-4">
-              场景: <span className="font-medium">{scene}</span>
+              Scene: <span className="font-medium">{scene}</span>
             </p>
 
             <div className="space-y-3">
-              <h5 className="text-sm font-medium text-gray-700">评分明细:</h5>
+              <h5 className="text-sm font-medium text-gray-700">Score Breakdown:</h5>
               {suitability.breakdown.map((item: any, index: number) => (
                 <div key={index} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-700 capitalize">{item.feature}</span>
                     <span className="text-gray-600">
-                      {item.contribution.toFixed(1)}% (权重: {(item.weight * 100).toFixed(0)}%)
+                      {item.contribution.toFixed(1)}% (Weight: {(item.weight * 100).toFixed(0)}%)
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -196,14 +196,14 @@ export default function ShopDrawer({ shopId, scene, onClose }: ShopDrawerProps) 
         )}
 
         <div className="border-t border-gray-200 pt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">设施详情</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Facility Details</h4>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-gray-600">噪音:</span>
+              <span className="text-gray-600">Noise:</span>
               <span className="ml-2 font-medium">{features.noise}/5</span>
             </div>
             <div>
-              <span className="text-gray-600">插座:</span>
+              <span className="text-gray-600">Outlets:</span>
               <span className="ml-2 font-medium">{features.outlets}/5</span>
             </div>
             <div>
@@ -211,15 +211,15 @@ export default function ShopDrawer({ shopId, scene, onClose }: ShopDrawerProps) 
               <span className="ml-2 font-medium">{features.wifi}/5</span>
             </div>
             <div>
-              <span className="text-gray-600">座位:</span>
+              <span className="text-gray-600">Seating:</span>
               <span className="ml-2 font-medium">{features.seating}/5</span>
             </div>
             <div>
-              <span className="text-gray-600">照明:</span>
+              <span className="text-gray-600">Lighting:</span>
               <span className="ml-2 font-medium">{features.lighting}/5</span>
             </div>
             <div>
-              <span className="text-gray-600">隐私:</span>
+              <span className="text-gray-600">Privacy:</span>
               <span className="ml-2 font-medium">{features.privacy}/5</span>
             </div>
           </div>

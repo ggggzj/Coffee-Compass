@@ -43,7 +43,7 @@ export default function ShopCard({
         <h3 className="font-semibold text-lg text-gray-900">{shop.name}</h3>
         {shop.suitability && (
           <div className="flex items-center gap-1">
-            <span className="text-xs font-medium text-gray-600">适用性</span>
+            <span className="text-xs font-medium text-gray-600">Suitability</span>
             <span className="text-lg font-bold text-blue-600">{shop.suitability.score}</span>
           </div>
         )}

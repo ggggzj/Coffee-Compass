@@ -84,8 +84,8 @@ export default function MapPane({
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100">
         <div className="text-center">
-          <p className="text-red-600 mb-2">缺少 Mapbox Token</p>
-          <p className="text-sm text-gray-600">请在 .env 文件中设置 NEXT_PUBLIC_MAPBOX_TOKEN</p>
+          <p className="text-red-600 mb-2">Missing Mapbox Token</p>
+          <p className="text-sm text-gray-600">Please set NEXT_PUBLIC_MAPBOX_TOKEN in .env file</p>
         </div>
       </div>
     )

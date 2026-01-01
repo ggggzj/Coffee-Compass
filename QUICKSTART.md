@@ -1,65 +1,65 @@
-# 快速启动指南
+# Quick Start Guide
 
-## 5分钟快速启动
+## 5-Minute Quick Start
 
-### 1. 安装依赖
+### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. 启动数据库
+### 2. Start Database
 ```bash
 docker-compose up -d
 ```
 
-等待几秒钟让数据库完全启动。
+Wait a few seconds for the database to fully start.
 
-### 3. 设置环境变量
+### 3. Set Environment Variables
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件，至少设置：
-- `DATABASE_URL` (已默认配置，通常不需要修改)
-- `NEXT_PUBLIC_MAPBOX_TOKEN` (必须！从 https://www.mapbox.com/ 获取免费token)
+Edit the `.env` file, at minimum set:
+- `DATABASE_URL` (default configured, usually no need to modify)
+- `NEXT_PUBLIC_MAPBOX_TOKEN` (Required! Get free token from https://www.mapbox.com/)
 
-### 4. 初始化数据库
+### 4. Initialize Database
 ```bash
 npm run db:generate
 npm run db:push
 npm run db:seed
 ```
 
-### 5. 启动开发服务器
+### 5. Start Development Server
 ```bash
 npm run dev
 ```
 
-访问 http://localhost:3000
+Visit http://localhost:3000
 
-## 常见问题
+## Common Issues
 
-### Mapbox Token 在哪里获取？
-1. 访问 https://www.mapbox.com/
-2. 注册免费账号
-3. 在 Dashboard 中找到 "Access token"
-4. 复制 token 到 `.env` 文件的 `NEXT_PUBLIC_MAPBOX_TOKEN`
+### Where to Get Mapbox Token?
+1. Visit https://www.mapbox.com/
+2. Register for a free account
+3. Find "Access token" in Dashboard
+4. Copy token to `NEXT_PUBLIC_MAPBOX_TOKEN` in `.env` file
 
-### 数据库连接失败？
-确保 Docker 容器正在运行：
+### Database Connection Failed?
+Make sure Docker container is running:
 ```bash
 docker-compose ps
 ```
 
-如果容器未运行，启动它：
+If container is not running, start it:
 ```bash
 docker-compose up -d
 ```
 
-### 端口已被占用？
-如果 5432 端口被占用，修改 `docker-compose.yml` 中的端口映射。
+### Port Already in Use?
+If port 5432 is occupied, modify the port mapping in `docker-compose.yml`.
 
-### 重置数据库？
+### Reset Database?
 ```bash
 docker-compose down -v
 docker-compose up -d
@@ -67,9 +67,8 @@ npm run db:push
 npm run db:seed
 ```
 
-## 下一步
+## Next Steps
 
-- 查看 `README.md` 了解完整文档
-- 探索代码结构
-- 自定义咖啡店数据（编辑 `prisma/seed.ts`）
-
+- Check `README.md` for complete documentation
+- Explore code structure
+- Customize coffee shop data (edit `prisma/seed.ts`)

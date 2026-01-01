@@ -60,7 +60,7 @@ export default function ResultsList({
   if (error) {
     return (
       <div className="p-4 text-red-600">
-        加载失败，请稍后重试
+        Failed to load, please try again later
       </div>
     )
   }
@@ -71,7 +71,7 @@ export default function ResultsList({
     <div className="p-4 space-y-4">
       {shops.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
-          未找到咖啡店
+          No coffee shops found
         </div>
       ) : (
         shops.map((shop: any) => (

@@ -20,7 +20,7 @@ export default function FilterBar({
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4 flex gap-6 items-center">
       <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700">城市:</label>
+        <label className="text-sm font-medium text-gray-700">City:</label>
         <select
           value={city}
           onChange={(e) => onCityChange(e.target.value)}
@@ -33,29 +33,29 @@ export default function FilterBar({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700">场景:</label>
+        <label className="text-sm font-medium text-gray-700">Scene:</label>
         <select
           value={scene}
           onChange={(e) => onSceneChange(e.target.value)}
           className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="Study">学习</option>
-          <option value="Remote Work">远程工作</option>
-          <option value="Date">约会</option>
-          <option value="Meeting">会议</option>
+          <option value="Study">Study</option>
+          <option value="Remote Work">Remote Work</option>
+          <option value="Date">Date</option>
+          <option value="Meeting">Meeting</option>
         </select>
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700">排序:</label>
+        <label className="text-sm font-medium text-gray-700">Sort:</label>
         <select
           value={sort}
           onChange={(e) => onSortChange(e.target.value)}
           className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="Distance">距离</option>
-          <option value="Rating">评分</option>
-          <option value="Suitability">适用性</option>
+          <option value="Distance">Distance</option>
+          <option value="Rating">Rating</option>
+          <option value="Suitability">Suitability</option>
         </select>
       </div>
     </div>

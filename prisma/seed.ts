@@ -338,7 +338,7 @@ const shops = [
 ]
 
 async function main() {
-  console.log('开始种子数据...')
+  console.log('Starting seed data...')
 
   for (const shop of shops) {
     await prisma.shop.create({
@@ -346,7 +346,7 @@ async function main() {
     })
   }
 
-  console.log(`已创建 ${shops.length} 个咖啡店`)
+  console.log(`Created ${shops.length} coffee shops`)
 }
 
 main()
