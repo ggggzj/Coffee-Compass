@@ -55,7 +55,46 @@ export async function GET(request: NextRequest) {
       where,
     })
 
-    // Compute suitability scores if scene is provided
+    // Calculate map center for distance calculation
+    let mapCenter: { lat: number; lng: number } | null = null
+    if (bounds) {
+      mapCenter = {
+        lat: (bounds.minLat + bounds.maxLat) / 2,
+        lng: (bounds.minLng + bounds.maxLng) / 2,
+      }
+    } else if (params.city) {
+      // Use city center if no bounds
+      const cityCenters: Record<string, { lat: number; lng: number }> = {
+        'Los Angeles': { lat: 34.0522, lng: -118.2437 },
+        'San Francisco': { lat: 37.7749, lng: -122.4194 },
+        'New York': { lat: 40.7128, lng: -74.006 },
+      }
+      mapCenter = cityCenters[params.city] || null
+    }
+
+    // Helper function to calculate distance in meters (Haversine formula)
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+      const R = 6371000 // Earth radius in meters
+      const dLat = ((lat2 - lat1) * Math.PI) / 180
+      const dLon = ((lon2 - lon1) * Math.PI) / 180
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      return R * c
+    }
+
+    // Helper function to determine if shop is open (mock implementation)
+    const isShopOpen = (): boolean => {
+      const hour = new Date().getHours()
+      // Mock: shops open 7 AM - 9 PM
+      return hour >= 7 && hour < 21
+    }
+
+    // Compute suitability scores and add distance/open status
     const shopsWithScores = shops.map((shop) => {
       const features = shop.features as any
       let suitability = null
@@ -64,9 +103,16 @@ export async function GET(request: NextRequest) {
         suitability = computeSuitability(params.scene as Scene, features, shop.rating)
       }
 
+      let distance: number | undefined
+      if (mapCenter) {
+        distance = calculateDistance(mapCenter.lat, mapCenter.lng, shop.latitude, shop.longitude)
+      }
+
       return {
         ...shop,
         suitability,
+        distance,
+        isOpen: isShopOpen(),
       }
     })
 
@@ -80,9 +126,13 @@ export async function GET(request: NextRequest) {
         const scoreB = b.suitability?.score || 0
         return scoreB - scoreA
       })
+    } else if (params.sort === 'Distance' && mapCenter) {
+      sortedShops = [...shopsWithScores].sort((a, b) => {
+        const distA = a.distance || Infinity
+        const distB = b.distance || Infinity
+        return distA - distB
+      })
     }
-    // Distance sorting would require calculating distance from a center point
-    // For MVP, we'll skip it or use a simple lat/lng comparison
 
     // Apply pagination after sorting
     const paginatedShops = sortedShops.slice(

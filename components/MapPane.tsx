@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import Map, { Marker, ViewStateChangeEvent } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useQuery } from '@tanstack/react-query'
+import Supercluster from 'supercluster'
 
 interface MapPaneProps {
   city: string
@@ -11,6 +12,7 @@ interface MapPaneProps {
   selectedShopId: string | null
   hoveredShopId: string | null
   onShopClick: (shopId: string) => void
+  initialBounds?: string | null
 }
 
 // City center coordinates
@@ -38,6 +40,7 @@ export default function MapPane({
   selectedShopId,
   hoveredShopId,
   onShopClick,
+  initialBounds,
 }: MapPaneProps) {
   const mapRef = useRef<any>(null)
   const [viewState, setViewState] = useState({
@@ -52,6 +55,43 @@ export default function MapPane({
   })
 
   const shops = data?.shops || []
+
+  // Setup marker clustering
+  const clusterer = useMemo(() => {
+    return new Supercluster({
+      radius: 50,
+      maxZoom: 14,
+    })
+  }, [])
+
+  const points = useMemo(() => {
+    return shops.map((shop: any) => ({
+      type: 'Feature' as const,
+      properties: {
+        cluster: false,
+        shopId: shop.id,
+      },
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [shop.longitude, shop.latitude],
+      },
+    }))
+  }, [shops])
+
+  const clusters = useMemo(() => {
+    if (points.length === 0) return []
+    clusterer.load(points)
+    
+    // Calculate bounding box from current view
+    const bbox: [number, number, number, number] = [
+      viewState.longitude - 0.1, // minLng
+      viewState.latitude - 0.1,  // minLat
+      viewState.longitude + 0.1, // maxLng
+      viewState.latitude + 0.1,  // maxLat
+    ]
+    
+    return clusterer.getClusters(bbox, Math.floor(viewState.zoom))
+  }, [points, viewState, clusterer])
 
   // Update map center when city changes
   useEffect(() => {
@@ -102,15 +142,37 @@ export default function MapPane({
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/streets-v12"
       >
-        {shops.map((shop: any) => {
+        {clusters.map((cluster: any) => {
+          const [longitude, latitude] = cluster.geometry.coordinates
+          const { cluster: isCluster, point_count } = cluster.properties
+
+          if (isCluster) {
+            return (
+              <Marker
+                key={`cluster-${cluster.id}`}
+                longitude={longitude}
+                latitude={latitude}
+                anchor="center"
+              >
+                <div className="cursor-pointer bg-blue-600 text-white rounded-full border-2 border-blue-800 flex items-center justify-center font-semibold text-sm min-w-[30px] h-[30px] px-2">
+                  {point_count}
+                </div>
+              </Marker>
+            )
+          }
+
+          const shopId = cluster.properties.shopId
+          const shop = shops.find((s: any) => s.id === shopId)
+          if (!shop) return null
+
           const isSelected = selectedShopId === shop.id
           const isHovered = hoveredShopId === shop.id
 
           return (
             <Marker
               key={shop.id}
-              longitude={shop.longitude}
-              latitude={shop.latitude}
+              longitude={longitude}
+              latitude={latitude}
               anchor="bottom"
               onClick={() => onShopClick(shop.id)}
             >
