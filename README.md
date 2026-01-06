@@ -2,6 +2,12 @@
 
 A Yelp-like coffee shop discovery platform that helps users find the perfect coffee shop for studying, remote work, dates, or meetings.
 
+## 🌐 Live Demo
+
+**🔗 [Visit Live Site](https://coffee-compass-two.vercel.app)**
+
+Deployed on Vercel: https://coffee-compass-two.vercel.app
+
 ## Features
 
 -  **Interactive Map**: Display coffee shop locations using Mapbox GL JS
