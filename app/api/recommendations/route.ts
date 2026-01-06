@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { computeSuitability, type Scene } from '@/lib/scoring'
 
+export const dynamic = 'force-dynamic'
+
 // GET - Get personalized recommendations
 export async function GET(request: NextRequest) {
   try {
