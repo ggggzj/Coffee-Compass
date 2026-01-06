@@ -40,7 +40,7 @@ export async function PATCH(
           longitude: submission.longitude,
           priceLevel: submission.priceLevel,
           tags: submission.tags,
-          features: submission.features,
+          features: submission.features as any,
           status: 'approved',
         },
       })

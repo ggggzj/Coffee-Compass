@@ -410,7 +410,7 @@ export default function ShopDrawer({ shopId, scene, onClose }: ShopDrawerProps) 
                             setReviewForm({ ...reviewForm, [key]: value })
                           }
                           className={`w-8 h-8 rounded ${
-                            reviewForm[key as keyof typeof reviewForm] >= value
+                            (reviewForm[key as keyof typeof reviewForm] as number) >= value
                               ? 'bg-yellow-400 text-yellow-900'
                               : 'bg-gray-200 text-gray-400'
                           } transition-colors`}

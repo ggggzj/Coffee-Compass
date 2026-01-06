@@ -103,7 +103,7 @@ export default function SubmitShopPage() {
               Shop Submitted Successfully!
             </h2>
             <p className="text-green-700">
-              Your submission will be reviewed by an admin. You'll be redirected to the home page
+              Your submission will be reviewed by an admin. You&apos;ll be redirected to the home page
               shortly.
             </p>
           </div>
