@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { computeSuitability, type Scene } from '@/lib/scoring'
 
+export const dynamic = 'force-dynamic'
+
 const querySchema = z.object({
   city: z.enum(['Los Angeles', 'San Francisco', 'New York']).optional(),
   scene: z.enum(['Study', 'Remote Work', 'Date', 'Meeting']).optional(),
