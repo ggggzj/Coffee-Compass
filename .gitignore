@@ -1,0 +1,29 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.uv-cache/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+.next/
+.turbo/
+.pnpm-store/
+
+# Local data caches
+backend/data/
+docs/eval-results/*.json
+!docs/eval-results/.gitkeep
+
+# IDE
+.vscode/
+.idea/
