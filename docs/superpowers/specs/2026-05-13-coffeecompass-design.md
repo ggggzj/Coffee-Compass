@@ -1,8 +1,13 @@
 # CoffeeCompass — 5-Week Design Spec
 
-**Status:** Draft v1 (awaiting user review)
+**Status:** Draft v2
 **Date:** 2026-05-13
 **Scope:** End-to-end design for a 5-week solo build of a RAG-powered coffee shop finder around USC / LA. Each week is a sub-project with its own implementation plan (created later via the `writing-plans` skill).
+
+**Changelog:**
+
+- **v2 (2026-05-13):** Drop Yelp Fusion API entirely. Yelp removed the permanent free developer tier in 2024 (now $229/mo minimum after a 30-day trial), so the project pivots to **Google Places API (New) only**, which returns up to 5 reviews/place plus `priceLevel`, `editorialSummary`, `rating`. Ingestion pipeline simplified from 4 phases to 3. Affected sections: §2 (Q3), §3 (C1.b removed), §4 (repo layout), §5.1 (`yelp_business_id` removed), §6 (Week 1 + Week 2 review caps), §7.2 (testing), §7.4 (cost table), §8 (risk table).
+- **v1 (2026-05-13):** Initial draft.
 
 ---
 
@@ -35,7 +40,7 @@ All decisions below were confirmed during brainstorming and are the source of tr
 |----|----------|--------|-----------|
 | Q1 | Query parsing pipeline | **B: Backend LLM slot extraction** — natural-language query in, `gpt-4o-mini` extracts `{semantic_query, filters}`, then embed + pgvector + SQL filter | Single-string UX, RAG-native, easy to extend in Week 3 with the agent |
 | Q2 | Postgres + pgvector deployment | **Docker Compose with `pgvector/pgvector:pg16` image** | Reproducible, isolated, identical image works in deployment |
-| Q3 | Google + Yelp data merge | **Google primary, Yelp reconciled by `(name, lat, lng)` fuzzy match, stored as one `cafes` row** | DB matches the "100 cafes" goal; queries hit one table |
+| Q3 | Data source | **Google Places API (New) only — no Yelp** | Yelp removed its free Fusion tier in 2024 ($229/mo minimum, 30-day trial only); Google Places (New) returns up to 5 reviews/place, `priceLevel`, `rating`, `editorialSummary` — covers every field the original two-source merge needed |
 | Q4 | WiFi / outlet / ambience tags | **LLM extraction from reviews (`gpt-4o-mini`)** — same call also produces the ambience_text used for embedding | The standard RAG-builder skill; tags + ambience_text in one call |
 | Q5 | LLM slot extractor output schema (Q1's B) | **Minimal: `semantic_query` + `{has_outlet, open_now, price_max}`**; other Q4-derived tags (noise_level, good_for_studying, has_wifi) go into `ambience_text` and are matched via vector retrieval, not SQL | Avoids fighting the vector retriever; SQL filters stay narrow and reliable |
 | C2 | Repository layout | **`backend/` + `frontend/` + `infra/` + `docs/`** top-level | Reserves slots for Week 3 (Next.js) and Week 5 (deploy artifacts) on Day 1 |
@@ -49,7 +54,7 @@ All decisions below were confirmed during brainstorming and are the source of tr
 
 ## 3. Prerequisites — Action Required Before Week 1
 
-You said you have **none** of the API keys yet. Here is the application path. **Start C1.a and C1.b in parallel today** because Yelp can take 1-3 business days.
+You said you have **none** of the API keys yet. Here is the application path. Start C1.a and C1.b today so you can begin Week 1 with all keys in hand.
 
 ### C1.a Google Places API
 
@@ -61,16 +66,7 @@ You said you have **none** of the API keys yet. Here is the application path. **
 
 **Expected cost for Week 1:** $0 (under $200 free credit).
 
-### C1.b Yelp Fusion API
-
-1. Sign up at <https://www.yelp.com/developers>.
-2. Manage App → Create New App → fill in app name and description (one paragraph).
-3. Yelp may approve instantly or take **1-3 business days**. There is nothing to do but wait.
-4. Once approved, copy the API key as `YELP_API_KEY`.
-
-**Expected cost for Week 1:** $0 (free tier: 5,000 calls/day).
-
-### C1.c OpenAI API
+### C1.b OpenAI API
 
 1. Sign up at <https://platform.openai.com>.
 2. Billing → add a payment method → top up **$10** (lasts the whole 5-week project).
@@ -78,7 +74,7 @@ You said you have **none** of the API keys yet. Here is the application path. **
 
 **Expected cost for entire 5 weeks:** $5-10 (see budget in §10).
 
-### C1.d Docker Desktop
+### C1.c Docker Desktop
 
 Install <https://www.docker.com/products/docker-desktop> for macOS. Verify with `docker --version` and `docker compose version`.
 
@@ -114,10 +110,8 @@ CoffeeCompass/
 │   │   │   ├── search.py           # /search endpoint (Week 1)
 │   │   │   └── agent.py            # /agent/chat endpoint (Week 3)
 │   │   ├── ingestion/
-│   │   │   ├── google_places.py
-│   │   │   ├── yelp.py
-│   │   │   ├── reconcile.py        # merge logic
-│   │   │   ├── reviews.py          # pull + LLM extraction
+│   │   │   ├── google_places.py    # Nearby Search + Place Details (reviews included)
+│   │   │   ├── reviews.py          # LLM extraction from Google reviews
 │   │   │   └── pipeline.py         # orchestrator CLI
 │   │   ├── search/
 │   │   │   ├── slot_extractor.py   # Q1.B LLM parser
@@ -170,14 +164,13 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE cafes (
     id              SERIAL PRIMARY KEY,
     google_place_id TEXT UNIQUE NOT NULL,
-    yelp_business_id TEXT UNIQUE,
     name            TEXT NOT NULL,
     address         TEXT NOT NULL,
     lat             DOUBLE PRECISION NOT NULL,
     lng             DOUBLE PRECISION NOT NULL,
-    rating          REAL,                 -- preferred: Yelp; fallback: Google
-    review_count    INT,
-    price_level     SMALLINT,             -- 1..4 (mapped from Yelp $/$$/$$$/$$$$)
+    rating          REAL,                 -- Google `rating` (0..5)
+    review_count    INT,                  -- Google `userRatingCount`
+    price_level     SMALLINT,             -- 1..4, mapped from Google `priceLevel` enum (INEXPENSIVE..VERY_EXPENSIVE)
     categories      TEXT[],
     opening_hours   JSONB,                -- structured, see §5.3
     -- LLM-extracted attributes (Q4)
@@ -260,12 +253,11 @@ RAGAS run results are dumped to `docs/eval-results/YYYY-MM-DD-vX.json`.
 - One-shot ingestion CLI: `uv run python -m app.ingestion.pipeline --radius 3mi --limit 100`.
 - `/search` endpoint returning Top 5 cafes by hybrid retrieval.
 
-**Ingestion pipeline (one CLI, 4 phases):**
+**Ingestion pipeline (one CLI, 3 phases):**
 
-1. **Google Places fetch** — Nearby Search around USC `(34.0224, -118.2851)`, radius up to 5 km, paginated, filter by `type=cafe`, stop at 100 unique `google_place_id`s. For each, fetch Place Details to get hours, rating, lat/lng, address, categories.
-2. **Yelp reconcile** — For each Google record, call Yelp Business Search with `term=name, latitude, longitude, radius=80m`. Match if name Jaro-Winkler similarity > 0.8 AND distance < 50m. Merge fields: Yelp `rating` overrides Google, Yelp `price` is the source of `price_level`, save `yelp_business_id`.
-3. **Review pull (minimal in Week 1)** — Yelp `/businesses/{id}/reviews` returns up to 3 latest reviews per shop (Yelp free tier limit). Fetch all available. Cache raw JSON to `backend/data/reviews_raw/<yelp_id>.json` so Week 2 can re-process without re-paying API.
-4. **LLM extraction + embedding** — One `gpt-4o-mini` call per cafe (input: name, categories, available reviews) produces a structured JSON:
+1. **Google Places search** — `places:searchNearby` (Places API New) around USC `(34.0224, -118.2851)`, `includedTypes=["cafe"]`, `maxResultCount=20`, paginated via `pageToken`, stop at 100 unique `places/<id>`s. Save only the `place.id` list at this stage.
+2. **Google Place Details + cache** — For each `place.id`, call `places/{id}` with a `FieldMask` including `displayName, formattedAddress, location, rating, userRatingCount, priceLevel, types, regularOpeningHours, editorialSummary, reviews`. Google returns up to **5 reviews per place** in the response — no separate review API call needed. Cache the full raw JSON to `backend/data/places_raw/<place_id>.json` so Week 2 can re-process without re-paying API.
+3. **LLM extraction + embedding** — One `gpt-4o-mini` call per cafe (input: name, types, `editorialSummary` if present, the 5 reviews) produces a structured JSON:
 
    ```json
    {
@@ -279,7 +271,7 @@ RAGAS run results are dumped to `docs/eval-results/YYYY-MM-DD-vX.json`.
 
    Then embed `ambience_text` with `text-embedding-3-small` and `UPSERT` the cafe row.
 
-All four phases are idempotent (UPSERT on `google_place_id`).
+All three phases are idempotent (UPSERT on `google_place_id`).
 
 **`/search` endpoint contract:**
 
@@ -339,7 +331,7 @@ Response 200:
 
 **Deliverables:**
 
-- Full review pull, **realistic cap: 8 reviews per cafe** (Yelp Fusion `/businesses/{id}/reviews` returns 3 snippets max; Google Place Details returns up to 5). The original "50 per cafe" goal in the user's Week 2 spec is not achievable from public Yelp + Google APIs without scraping (which we will not do). This is documented honestly in the blog post; the LLM extractor is tuned to extract reliable tags from ~8 reviews.
+- Full review pull, **realistic cap: 5 reviews per cafe** (Google Places API (New) returns up to 5 reviews in `places/{id}` Place Details). The original "50 per cafe" goal in the user's Week 2 spec is not achievable from public APIs without scraping (which we will not do). This is documented honestly in the blog post; the LLM extractor is tuned to extract reliable tags from ~5 reviews, leaning on Google's `editorialSummary` (when available) for additional signal.
 - Re-run the LLM extractor with the full review corpus → richer `ambience_text` + sharper tags.
 - 30-entry golden set in `backend/app/eval/golden_set.json` (you hand-author the queries; you label expected cafe IDs after Week 1 data is in).
 - RAGAS baseline run committed to `docs/eval-results/2026-05-20-v1.json`. Metrics: `context_precision`, `faithfulness`, `answer_relevancy`.
@@ -448,7 +440,7 @@ data: { "recommendations": [...], "rationale": "..." }
 
 ### 7.2 Testing Strategy
 
-- **Unit tests** (pytest) for: slot extractor JSON shape, opening-hours `open_now` logic, retriever SQL builder, Yelp reconcile fuzzy matcher.
+- **Unit tests** (pytest) for: slot extractor JSON shape, opening-hours `open_now` logic, retriever SQL builder, Google `priceLevel` enum → integer mapper.
 - **Integration tests**: spin up a test container via `testcontainers-python` with pgvector, seed 3 cafes, hit `/search`.
 - **Golden-set eval** (Week 2+): the eval IS the integration test for retrieval quality.
 - **No API mocking gymnastics** — external APIs are mocked at the `httpx.AsyncClient` level using `respx`.
@@ -465,8 +457,7 @@ Total budget across 5 weeks: **≤ $30 hard cap**.
 
 | Bucket | Estimate | Notes |
 |--------|----------|-------|
-| Google Places | $0 | within $200/mo credit |
-| Yelp Fusion | $0 | free tier |
+| Google Places (New) | $0 | ~$2 of usage, well within $200/mo Maps Platform credit |
 | OpenAI (Week 1 ingest) | $0.50 | 100 cafes × few hundred tokens |
 | OpenAI (Week 2 reviews) | $3-5 | 100 × 50 reviews × one extract call |
 | OpenAI (Week 2 RAGAS baseline) | $1-2 | 30 queries × 3 metrics |
@@ -489,7 +480,7 @@ Total budget across 5 weeks: **≤ $30 hard cap**.
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
-| Yelp Fusion approval takes > 3 days | Medium | Start Week 1 with Google-only; reconcile is a no-op until key arrives. |
+| Google Places (New) `reviews` field returns < 5 for some cafes | Medium | Cap `ambience_text` quality on whatever is returned; record per-cafe `review_pulled_count` and surface it in the eval. |
 | LLM-extracted `has_outlet` is unreliable | High | Explicitly allow `null`; surface a confidence field; do not lie about coverage in the blog post. |
 | RAGAS scores are noisy on 30-query set | Medium | Acceptable for a learning project; mention in blog as a known limitation. |
 | EC2 deployment eats a weekend day | Medium | Have a fallback `Fly.io` deploy script ready in `infra/fly/` (a few hours of work, not implemented unless EC2 path fails). |
