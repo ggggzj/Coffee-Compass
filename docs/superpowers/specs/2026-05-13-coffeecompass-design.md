@@ -306,14 +306,19 @@ Response 200:
       "address": "...",
       "rating": 4.6,
       "price_level": 2,
+      "has_outlet": true,
+      "has_wifi": true,
+      "noise_level": "quiet",
+      "good_for_studying": true,
       "open_now": true,
-      "distance_m": 820,
       "similarity": 0.81,
       "ambience_text": "..."
     }
   ]
 }
 ```
+
+(`distance_m` deferred to Week 3 when the frontend introduces a "user location" reference point. Adding it now would require an arbitrary anchor.)
 
 **Retrieval algorithm:**
 
