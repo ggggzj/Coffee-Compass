@@ -1,0 +1,24 @@
+{
+  "places": [
+    {
+      "id": "ChIJabc1",
+      "displayName": {"text": "Bricks & Scones"},
+      "formattedAddress": "403 N Larchmont Blvd, Los Angeles, CA",
+      "location": {"latitude": 34.075, "longitude": -118.323},
+      "rating": 4.6,
+      "userRatingCount": 1200,
+      "priceLevel": "PRICE_LEVEL_MODERATE",
+      "types": ["cafe", "bakery"]
+    },
+    {
+      "id": "ChIJabc2",
+      "displayName": {"text": "USC Tutor Campus Center Cafe"},
+      "formattedAddress": "3607 Trousdale Pkwy, Los Angeles, CA",
+      "location": {"latitude": 34.022, "longitude": -118.286},
+      "rating": 3.9,
+      "userRatingCount": 230,
+      "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+      "types": ["cafe"]
+    }
+  ]
+}

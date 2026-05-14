@@ -1,0 +1,19 @@
+{
+  "id": "ChIJabc1",
+  "displayName": {"text": "Bricks & Scones"},
+  "formattedAddress": "403 N Larchmont Blvd, Los Angeles, CA",
+  "location": {"latitude": 34.075, "longitude": -118.323},
+  "rating": 4.6,
+  "userRatingCount": 1200,
+  "priceLevel": "PRICE_LEVEL_MODERATE",
+  "types": ["cafe", "bakery"],
+  "regularOpeningHours": {
+    "periods": [
+      {"open": {"day": 1, "hour": 7, "minute": 0}, "close": {"day": 1, "hour": 20, "minute": 0}}
+    ]
+  },
+  "reviews": [
+    {"text": {"text": "Quiet spot perfect for studying. Plenty of outlets."}, "rating": 5},
+    {"text": {"text": "Great scones, fast wifi."}, "rating": 5}
+  ]
+}
