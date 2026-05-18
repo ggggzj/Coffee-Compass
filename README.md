@@ -16,3 +16,30 @@ uv run uvicorn app.main:app --reload
 ```
 
 Then `POST http://localhost:8000/search` with `{"query": "quiet place with outlets"}`.
+
+## Week 1 verification (Postman or curl)
+
+After running ingestion against real APIs (or the smoke seeder for a quick check):
+
+```bash
+curl -s -X POST http://localhost:8000/search \
+  -H 'Content-Type: application/json' \
+  -d '{"query": "quiet place with outlets near USC", "top_k": 5}' | jq .
+```
+
+You should see 5 results, all with `has_outlet=true`, ordered by `similarity`.
+
+Try variations:
+
+- `{"query": "cheap latte open now"}` → results filtered by `price_max <= 2` and `open_now`
+- `{"query": "first date spot"}` → no SQL filters, pure vector ranking on vibe
+
+### Smoke script (no Google ingestion)
+
+From `backend/` with Postgres up, migrations applied, and API on port 8000:
+
+```bash
+uv run python -m scripts.smoke_search
+```
+
+Requires `OPENAI_API_KEY` in `.env`.
