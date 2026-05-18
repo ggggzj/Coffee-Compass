@@ -79,8 +79,9 @@ async def run_pipeline(
 ) -> int:
     embedder = Embedder(openai_client=openai_client, model=embedding_model)
 
-    nearby = await google_client.nearby_search(lat=lat, lng=lng, radius_m=radius_m)
-    nearby = nearby[:limit]
+    nearby = await google_client.nearby_search(
+        lat=lat, lng=lng, radius_m=radius_m, limit=limit
+    )
     log.info("nearby_fetched", count=len(nearby))
 
     for raw in nearby:

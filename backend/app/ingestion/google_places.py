@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any, Self
 
@@ -42,6 +43,31 @@ class NormalizedPlace:
     reviews: list[str] = field(default_factory=list)
 
 
+def _offset_meters(lat: float, lng: float, north_m: float, east_m: float) -> tuple[float, float]:
+    """Approximate WGS84 offset; good enough for city-scale search."""
+    dlat = north_m / 111_320.0
+    dlng = east_m / (111_320.0 * math.cos(math.radians(lat)))
+    return lat + dlat, lng + dlng
+
+
+def _multi_search_centers(lat: float, lng: float, radius_m: int) -> list[tuple[float, float]]:
+    """Places API (New) searchNearby returns at most 20 places per request and has NO pageToken.
+
+    We sample multiple circle centers (anchor + 8 compass offsets) so overlapping searches
+    can surface more unique places than a single request allows (design: ~100 cafes in radius).
+    """
+    if radius_m <= 0:
+        return [(lat, lng)]
+    step_m = min(radius_m * 0.35, 2_500.0)
+    centers: list[tuple[float, float]] = [(lat, lng)]
+    for bearing_deg in range(0, 360, 45):
+        rad = math.radians(bearing_deg)
+        north = step_m * math.cos(rad)
+        east = step_m * math.sin(rad)
+        centers.append(_offset_meters(lat, lng, north, east))
+    return centers
+
+
 def _from_raw(raw: dict[str, Any]) -> NormalizedPlace:
     price = raw.get("priceLevel")
     return NormalizedPlace(
@@ -71,7 +97,7 @@ class GooglePlacesClient:
         await self._client.aclose()
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
-    async def nearby_search(
+    async def _nearby_search_single(
         self, *, lat: float, lng: float, radius_m: int
     ) -> list[NormalizedPlace]:
         headers = {
@@ -92,6 +118,28 @@ class GooglePlacesClient:
         r = await self._client.post("/v1/places:searchNearby", json=body, headers=headers)
         r.raise_for_status()
         return [_from_raw(p) for p in r.json().get("places", [])]
+
+    async def nearby_search(
+        self,
+        *,
+        lat: float,
+        lng: float,
+        radius_m: int,
+        limit: int = 100,
+    ) -> list[NormalizedPlace]:
+        """Aggregate nearby cafes from multiple circle centers (see _multi_search_centers)."""
+        seen: set[str] = set()
+        merged: list[NormalizedPlace] = []
+        for clat, clng in _multi_search_centers(lat, lng, radius_m):
+            batch = await self._nearby_search_single(lat=clat, lng=clng, radius_m=radius_m)
+            for p in batch:
+                if p.google_place_id in seen:
+                    continue
+                seen.add(p.google_place_id)
+                merged.append(p)
+                if len(merged) >= limit:
+                    return merged
+        return merged
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
     async def place_details(self, place_id: str) -> NormalizedPlace:

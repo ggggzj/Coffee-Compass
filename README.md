@@ -43,3 +43,16 @@ uv run python -m scripts.smoke_search
 ```
 
 Requires `OPENAI_API_KEY` in `.env`.
+
+## Ingestion limits (Google Places API New)
+
+`searchNearby` returns at most **20 places per HTTP request** and does not support `pageToken` pagination. The client runs **several overlapping circle searches** (anchor + 8 offsets) and **deduplicates** by `google_place_id` so `uv run python -m app.ingestion.pipeline --limit 100` can collect more than 20 rows when the area has enough cafes (still capped by what Google returns).
+
+## Remove local smoke-test rows (optional)
+
+If you ran `scripts.smoke_search` and no longer want `(smoke)` cafes in `/search` results:
+
+```bash
+docker exec coffeecompass-postgres psql -U coffee -d coffeecompass \
+  -c "DELETE FROM cafes WHERE google_place_id LIKE 'smoke-%';"
+```
