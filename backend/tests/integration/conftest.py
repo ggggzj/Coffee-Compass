@@ -41,7 +41,7 @@ async def session(pgvector_url: str) -> AsyncIterator[AsyncSession]:
     # leak rows into later ones. RESTART IDENTITY also resets sequence values
     # so primary keys start over at 1 in each test.
     async with engine.begin() as conn:
-        await conn.execute(text("TRUNCATE TABLE cafes RESTART IDENTITY CASCADE"))
+        await conn.execute(text("TRUNCATE TABLE prompt_versions, cafes RESTART IDENTITY CASCADE"))
     SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     async with SessionLocal() as s:
         yield s

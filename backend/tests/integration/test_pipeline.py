@@ -61,6 +61,7 @@ async def test_pipeline_persists_enriched_cafes(session, monkeypatch, tmp_path):
         limit=10,
         tagger_model="gpt-4o-mini",
         embedding_model="text-embedding-3-small",
+        review_tagger_impl="v1",
     )
     await session.commit()
 

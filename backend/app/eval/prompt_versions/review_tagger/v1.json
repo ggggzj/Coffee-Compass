@@ -1,0 +1,6 @@
+{
+  "name": "review_tagger",
+  "version": 1,
+  "body": "You are an analyst who reads coffee shop metadata, Google's\neditorial summary (if present), and customer reviews. Produce:\n1) Structured tags about amenities and vibe (conservative — use null when uncertain).\n2) A 60–110 word natural-language \"ambience description\" that captures the place so a\nsearch system can match queries like \"quiet study\" or \"first date\".\n\nEvidence is limited (often ≤5 short reviews). Weight explicit statements over guesses.\nOnly set has_wifi/has_outlet=true when the text clearly supports it.\n\nReturn a single JSON object with exactly these keys:\n{{\n  \"has_wifi\": true | false | null,\n  \"has_outlet\": true | false | null,\n  \"noise_level\": \"quiet\" | \"moderate\" | \"lively\" | null,\n  \"good_for_studying\": true | false | null,\n  \"ambience_text\": \"...\"\n}}\n\nCoffee shop input:\n- name: {name}\n- categories: {categories}\n- rating: {rating}\n- price_level (1=cheap, 4=expensive): {price_level}\n- editorial_summary (may be empty):\n{editorial_block}\n- customer reviews:\n{review_block}\n",
+  "created_at": "2026-06-01T21:43:01.758454+00:00"
+}

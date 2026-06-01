@@ -24,7 +24,7 @@ _NEARBY_FIELDS = (
 
 _DETAILS_FIELDS = (
     "id,displayName,formattedAddress,location,rating,userRatingCount,priceLevel,types,"
-    "regularOpeningHours,reviews"
+    "regularOpeningHours,editorialSummary,reviews"
 )
 
 
@@ -40,6 +40,7 @@ class NormalizedPlace:
     price_level: int | None
     categories: list[str]
     opening_hours: dict[str, Any] | None
+    editorial_summary: str | None = None
     reviews: list[str] = field(default_factory=list)
 
 
@@ -81,6 +82,11 @@ def _from_raw(raw: dict[str, Any]) -> NormalizedPlace:
         price_level=_PRICE_MAP.get(price) if price else None,
         categories=list(raw.get("types", [])),
         opening_hours=raw.get("regularOpeningHours"),
+        editorial_summary=(
+            (raw.get("editorialSummary") or {}).get("text")
+            if isinstance(raw.get("editorialSummary"), dict)
+            else None
+        ),
         reviews=[r.get("text", {}).get("text", "") for r in raw.get("reviews", [])],
     )
 

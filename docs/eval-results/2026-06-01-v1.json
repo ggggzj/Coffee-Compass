@@ -1,0 +1,409 @@
+{
+  "meta": {
+    "run_at": "2026-06-01T21:56:11.474867+00:00",
+    "golden_set": "backend/app/eval/golden_set.json",
+    "golden_version": 2,
+    "commit": "253d72eec6744a803165e247708e462c1954a80d",
+    "models": {
+      "slot_extractor": "gpt-4o-mini",
+      "review_tagger": "gpt-4o-mini v2",
+      "embedding": "text-embedding-3-small"
+    },
+    "notes": "faithfulness/answer_relevancy use embedding cosine (Week 2 baseline). Populate review_snippets on cafes (ingest/retag) for faithfulness signal."
+  },
+  "metrics": {
+    "context_precision": 0.17,
+    "faithfulness": 0.6310677748764043,
+    "answer_relevancy": 0.36312268363642036
+  },
+  "per_query": [
+    {
+      "query": "quiet place to study near USC",
+      "retrieved_ids": [
+        10,
+        53,
+        31,
+        57,
+        7
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.40365812874077306,
+      "faithfulness": 0.6288941871807652
+    },
+    {
+      "query": "coffee shop with outlets and wifi for laptop work",
+      "retrieved_ids": [
+        57,
+        36,
+        53,
+        20
+      ],
+      "context_precision": 0.75,
+      "answer_relevancy": 0.5110996670551073,
+      "faithfulness": 0.6679312744358783
+    },
+    {
+      "query": "cheap latte under two dollars vibe near campus",
+      "retrieved_ids": [
+        20,
+        33,
+        35,
+        6,
+        8
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.4024007387724753,
+      "faithfulness": 0.6214046581449582
+    },
+    {
+      "query": "good first date coffee spot not too loud",
+      "retrieved_ids": [
+        19,
+        10,
+        37,
+        4,
+        42
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.45219440308121917,
+      "faithfulness": 0.6504072542364365
+    },
+    {
+      "query": "open late for studying during finals",
+      "retrieved_ids": [
+        10,
+        35,
+        20,
+        53,
+        7
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.36645355494935944,
+      "faithfulness": 0.6087972613663928
+    },
+    {
+      "query": "cozy reading nook natural light",
+      "retrieved_ids": [
+        10,
+        29,
+        53,
+        8,
+        56
+      ],
+      "context_precision": 0.4,
+      "answer_relevancy": 0.4255594926247538,
+      "faithfulness": 0.6353278506777388
+    },
+    {
+      "query": "fast wifi and power outlets university area",
+      "retrieved_ids": [
+        53,
+        57,
+        20,
+        36
+      ],
+      "context_precision": 0.75,
+      "answer_relevancy": 0.31315601206120236,
+      "faithfulness": 0.6679827116302729
+    },
+    {
+      "query": "minimal noise good for zoom calls",
+      "retrieved_ids": [
+        36,
+        31,
+        7,
+        8,
+        27
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.28296043876185056,
+      "faithfulness": 0.6063443483249765
+    },
+    {
+      "query": "instagrammable cafe aesthetic brunch",
+      "retrieved_ids": [
+        50,
+        54,
+        19,
+        10,
+        30
+      ],
+      "context_precision": 0.4,
+      "answer_relevancy": 0.4827026860589262,
+      "faithfulness": 0.5854195991321623
+    },
+    {
+      "query": "dog friendly patio seating",
+      "retrieved_ids": [
+        10,
+        54,
+        38,
+        57,
+        53
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.32401425981514215,
+      "faithfulness": 0.6062426047804844
+    },
+    {
+      "query": "strong espresso serious coffee nerds",
+      "retrieved_ids": [
+        51,
+        21,
+        31,
+        16,
+        36
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.4342901427535688,
+      "faithfulness": 0.6198208986220706
+    },
+    {
+      "query": "matcha latte trendy study break",
+      "retrieved_ids": [
+        51,
+        10,
+        53,
+        41,
+        20
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.49466501319350104,
+      "faithfulness": 0.6410719772044351
+    },
+    {
+      "query": "group study big tables",
+      "retrieved_ids": [
+        57,
+        10,
+        54,
+        27,
+        53
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.2240306847291611,
+      "faithfulness": 0.5931503799015753
+    },
+    {
+      "query": "solo work headphones friendly atmosphere",
+      "retrieved_ids": [
+        6,
+        10,
+        31,
+        29,
+        33
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.35085226650332346,
+      "faithfulness": 0.6725288522525379
+    },
+    {
+      "query": "pastries and coffee breakfast meeting",
+      "retrieved_ids": [
+        34,
+        21,
+        50,
+        57,
+        27
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.4478976795634999,
+      "faithfulness": 0.6023313527612317
+    },
+    {
+      "query": "vietnamese coffee condensed milk sweet",
+      "retrieved_ids": [
+        39,
+        52,
+        31,
+        20,
+        21
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.28046036402804186,
+      "faithfulness": 0.6684119221934937
+    },
+    {
+      "query": "oat milk latte plant based options",
+      "retrieved_ids": [
+        10,
+        38,
+        57,
+        19,
+        54
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.2521054502212309,
+      "faithfulness": 0.6140731181514745
+    },
+    {
+      "query": "date night intimate lighting",
+      "retrieved_ids": [
+        19,
+        10,
+        6,
+        4,
+        56
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.3380416883559547,
+      "faithfulness": 0.6541489487566441
+    },
+    {
+      "query": "budget friendly student hangout",
+      "retrieved_ids": [
+        20,
+        35,
+        45,
+        13,
+        47
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.4009240303509918,
+      "faithfulness": 0.5771475968080634
+    },
+    {
+      "query": "upscale third wave pourover",
+      "retrieved_ids": [
+        31,
+        5,
+        51,
+        21,
+        9
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.1871449790174357,
+      "faithfulness": 0.6337389985622345
+    },
+    {
+      "query": "near expo line metro coffee",
+      "retrieved_ids": [
+        51,
+        21,
+        10,
+        41,
+        36
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.4080790688504557,
+      "faithfulness": 0.6361491354908514
+    },
+    {
+      "query": "parking not terrible around USC",
+      "retrieved_ids": [
+        40,
+        45,
+        43,
+        23,
+        7
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.3911777869581138,
+      "faithfulness": 0.648357435050728
+    },
+    {
+      "query": "not crowded weekday morning",
+      "retrieved_ids": [
+        6,
+        29,
+        31,
+        10,
+        56
+      ],
+      "context_precision": 0.4,
+      "answer_relevancy": 0.26438682631047455,
+      "faithfulness": 0.6642285866973829
+    },
+    {
+      "query": "outdoor seating sunny afternoon",
+      "retrieved_ids": [
+        10,
+        8,
+        54,
+        53,
+        6
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.41440330951324944,
+      "faithfulness": 0.5831802303622148
+    },
+    {
+      "query": "iced coffee hot LA summer",
+      "retrieved_ids": [
+        53,
+        56,
+        5,
+        20,
+        41
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.3633464347104475,
+      "faithfulness": 0.6750902818254964
+    },
+    {
+      "query": "air conditioning cold brew",
+      "retrieved_ids": [
+        9,
+        5,
+        20,
+        31,
+        56
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.31686049844463293,
+      "faithfulness": 0.6908376617748413
+    },
+    {
+      "query": "kid friendly weekend brunch crowd",
+      "retrieved_ids": [
+        54,
+        50,
+        34,
+        10,
+        38
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.4460204389490855,
+      "faithfulness": 0.5949544599372464
+    },
+    {
+      "query": "quick grab and go before class",
+      "retrieved_ids": [
+        46,
+        47,
+        35,
+        44,
+        14
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.3253909526893951,
+      "faithfulness": 0.5654769337681991
+    },
+    {
+      "query": "walking distance from village",
+      "retrieved_ids": [
+        40,
+        38,
+        27,
+        16,
+        28
+      ],
+      "context_precision": 0.2,
+      "answer_relevancy": 0.17624371803529348,
+      "faithfulness": 0.6554235618622615
+    },
+    {
+      "query": "celebratory post exam treat coffee",
+      "retrieved_ids": [
+        20,
+        9,
+        57,
+        51,
+        50
+      ],
+      "context_precision": 0.0,
+      "answer_relevancy": 0.41315979399394437,
+      "faithfulness": 0.6631591643990817
+    }
+  ]
+}

@@ -12,6 +12,7 @@
       {"open": {"day": 1, "hour": 7, "minute": 0}, "close": {"day": 1, "hour": 20, "minute": 0}}
     ]
   },
+  "editorialSummary": {"text": "Neighborhood bakery cafe popular for scones and quiet seating."},
   "reviews": [
     {"text": {"text": "Quiet spot perfect for studying. Plenty of outlets."}, "rating": 5},
     {"text": {"text": "Great scones, fast wifi."}, "rating": 5}

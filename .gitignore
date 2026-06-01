@@ -21,8 +21,9 @@ node_modules/
 
 # Local data caches
 backend/data/
-docs/eval-results/*.json
-!docs/eval-results/.gitkeep
+
+# Eval-result JSONs are committed evidence (design spec "honesty rule"), so they
+# are intentionally NOT ignored.
 
 # IDE
 .vscode/

@@ -1,0 +1,185 @@
+{
+  "version": 2,
+  "items": [
+    {
+      "id": "g001",
+      "query": "quiet place to study near USC",
+      "expected_cafe_ids": [6, 56, 52],
+      "tags": ["quiet", "study"]
+    },
+    {
+      "id": "g002",
+      "query": "coffee shop with outlets and wifi for laptop work",
+      "expected_cafe_ids": [36, 57, 20],
+      "tags": ["wifi", "outlet", "work"]
+    },
+    {
+      "id": "g003",
+      "query": "cheap latte under two dollars vibe near campus",
+      "expected_cafe_ids": [5, 56, 52],
+      "tags": ["cheap", "budget"]
+    },
+    {
+      "id": "g004",
+      "query": "good first date coffee spot not too loud",
+      "expected_cafe_ids": [7, 31, 56],
+      "tags": ["date", "quiet"]
+    },
+    {
+      "id": "g005",
+      "query": "open late for studying during finals",
+      "expected_cafe_ids": [36, 57, 27],
+      "tags": ["study", "late"]
+    },
+    {
+      "id": "g006",
+      "query": "cozy reading nook natural light",
+      "expected_cafe_ids": [56, 52, 29],
+      "tags": ["cozy", "quiet"]
+    },
+    {
+      "id": "g007",
+      "query": "fast wifi and power outlets university area",
+      "expected_cafe_ids": [36, 57, 20],
+      "tags": ["wifi", "outlet"]
+    },
+    {
+      "id": "g008",
+      "query": "minimal noise good for zoom calls",
+      "expected_cafe_ids": [7, 52, 53],
+      "tags": ["quiet", "work"]
+    },
+    {
+      "id": "g009",
+      "query": "instagrammable cafe aesthetic brunch",
+      "expected_cafe_ids": [30, 7, 19],
+      "tags": ["aesthetic", "brunch"]
+    },
+    {
+      "id": "g010",
+      "query": "dog friendly patio seating",
+      "expected_cafe_ids": [37, 40, 11],
+      "tags": ["patio", "outdoor"]
+    },
+    {
+      "id": "g011",
+      "query": "strong espresso serious coffee nerds",
+      "expected_cafe_ids": [28, 31, 30],
+      "tags": ["specialty", "espresso"]
+    },
+    {
+      "id": "g012",
+      "query": "matcha latte trendy study break",
+      "expected_cafe_ids": [30, 8, 5],
+      "tags": ["matcha", "trendy"]
+    },
+    {
+      "id": "g013",
+      "query": "group study big tables",
+      "expected_cafe_ids": [20, 57, 52],
+      "tags": ["group", "study"]
+    },
+    {
+      "id": "g014",
+      "query": "solo work headphones friendly atmosphere",
+      "expected_cafe_ids": [16, 36, 27],
+      "tags": ["work", "study"]
+    },
+    {
+      "id": "g015",
+      "query": "pastries and coffee breakfast meeting",
+      "expected_cafe_ids": [38, 55, 28],
+      "tags": ["pastry", "breakfast"]
+    },
+    {
+      "id": "g016",
+      "query": "vietnamese coffee condensed milk sweet",
+      "expected_cafe_ids": [6, 5, 45],
+      "tags": ["specialty-drink", "weak-ground-truth"]
+    },
+    {
+      "id": "g017",
+      "query": "oat milk latte plant based options",
+      "expected_cafe_ids": [40, 30, 53],
+      "tags": ["plant-based", "weak-ground-truth"]
+    },
+    {
+      "id": "g018",
+      "query": "date night intimate lighting",
+      "expected_cafe_ids": [7, 4, 31],
+      "tags": ["date", "upscale"]
+    },
+    {
+      "id": "g019",
+      "query": "budget friendly student hangout",
+      "expected_cafe_ids": [5, 56, 45],
+      "tags": ["budget", "student"]
+    },
+    {
+      "id": "g020",
+      "query": "upscale third wave pourover",
+      "expected_cafe_ids": [28, 31, 4],
+      "tags": ["upscale", "specialty"]
+    },
+    {
+      "id": "g021",
+      "query": "near expo line metro coffee",
+      "expected_cafe_ids": [40, 45, 27],
+      "tags": ["location", "weak-ground-truth"]
+    },
+    {
+      "id": "g022",
+      "query": "parking not terrible around USC",
+      "expected_cafe_ids": [40, 21, 48],
+      "tags": ["parking", "weak-ground-truth"]
+    },
+    {
+      "id": "g023",
+      "query": "not crowded weekday morning",
+      "expected_cafe_ids": [6, 52, 29],
+      "tags": ["quiet", "uncrowded"]
+    },
+    {
+      "id": "g024",
+      "query": "outdoor seating sunny afternoon",
+      "expected_cafe_ids": [37, 54, 40],
+      "tags": ["outdoor", "patio"]
+    },
+    {
+      "id": "g025",
+      "query": "iced coffee hot LA summer",
+      "expected_cafe_ids": [40, 28, 5],
+      "tags": ["iced", "weak-ground-truth"]
+    },
+    {
+      "id": "g026",
+      "query": "air conditioning cold brew",
+      "expected_cafe_ids": [28, 36, 31],
+      "tags": ["cold-brew", "weak-ground-truth"]
+    },
+    {
+      "id": "g027",
+      "query": "kid friendly weekend brunch crowd",
+      "expected_cafe_ids": [34, 55, 19],
+      "tags": ["family", "brunch"]
+    },
+    {
+      "id": "g028",
+      "query": "quick grab and go before class",
+      "expected_cafe_ids": [40, 48, 45],
+      "tags": ["fast", "student"]
+    },
+    {
+      "id": "g029",
+      "query": "walking distance from village",
+      "expected_cafe_ids": [40, 45, 48],
+      "tags": ["location", "usc-village"]
+    },
+    {
+      "id": "g030",
+      "query": "celebratory post exam treat coffee",
+      "expected_cafe_ids": [4, 14, 38],
+      "tags": ["treat", "dessert"]
+    }
+  ]
+}

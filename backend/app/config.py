@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     slot_extractor_model: str = Field("gpt-4o-mini", alias="SLOT_EXTRACTOR_MODEL")
     review_tagger_model: str = Field("gpt-4o-mini", alias="REVIEW_TAGGER_MODEL")
     embedding_model: str = Field("text-embedding-3-small", alias="EMBEDDING_MODEL")
+    review_tagger_impl: str = Field("v1", alias="REVIEW_TAGGER_IMPL")
 
 
 def get_settings() -> Settings:

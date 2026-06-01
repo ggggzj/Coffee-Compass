@@ -42,5 +42,8 @@ async def test_place_details_merges_hours_and_reviews():
             place = await client.place_details("ChIJabc1")
     assert place.opening_hours is not None
     assert place.opening_hours["periods"][0]["open"]["hour"] == 7
+    assert place.editorial_summary == (
+        "Neighborhood bakery cafe popular for scones and quiet seating."
+    )
     assert len(place.reviews) == 2
     assert "outlets" in place.reviews[0].lower()
