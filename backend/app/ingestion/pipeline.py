@@ -122,6 +122,8 @@ async def run_pipeline(
     )
     log.info("nearby_fetched", count=len(nearby))
 
+    # Phase 1: fetch details + LLM tags for every place (per-cafe API calls).
+    enriched: list[tuple[NormalizedPlace, CafeTags]] = []
     for raw in nearby:
         details = await google_client.place_details(raw.google_place_id)
         _cache_place_details(details)
@@ -131,15 +133,19 @@ async def run_pipeline(
             name=details.name,
             review_count_pulled=len(details.reviews),
         )
-
         tags = await tag_cafe_for_place(
             openai_client=openai_client,
             model=tagger_model,
             impl=review_tagger_impl,
             place=details,
         )
-        embedding = await embedder.embed(tags.ambience_text)
+        enriched.append((details, tags))
 
+    # Phase 2: embed every ambience_text in one batched call instead of N calls.
+    embeddings = await embedder.embed_many([tags.ambience_text for _, tags in enriched])
+
+    # Phase 3: upsert rows with their embeddings.
+    for (details, tags), embedding in zip(enriched, embeddings, strict=True):
         await _upsert_cafe(session, place=details, tags=tags, embedding=embedding)
         log.info("cafe_upserted", name=details.name, has_outlet=tags.has_outlet)
 

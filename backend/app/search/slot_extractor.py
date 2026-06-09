@@ -15,7 +15,8 @@ Return a single JSON object with exactly these keys:
 }}
 
 Rules:
-- Put vibe descriptors ("quiet", "good for reading", "cozy", "first-date") into semantic_query in ENGLISH.
+- Put vibe descriptors ("quiet", "good for reading", "cozy", "first-date")
+  into semantic_query in ENGLISH.
 - ONLY set has_outlet=true if the user explicitly asks for outlets / charging / 插座.
 - ONLY set open_now=true if the user explicitly says open now / 营业中 / 现在开门.
 - ONLY set price_max if the user mentions cheap / budget / 便宜 / under $X / $$. Map:

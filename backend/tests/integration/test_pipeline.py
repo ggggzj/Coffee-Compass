@@ -42,13 +42,11 @@ async def test_pipeline_persists_enriched_cafes(session, monkeypatch, tmp_path):
             ambience_text="A quiet study spot with outlets and fast wifi.",
         )
 
-    async def fake_embed(text):
-        return [0.1] * 1536
+    async def fake_embed_many(self, texts, *, batch_size=128):
+        return [[0.1] * 1536 for _ in texts]
 
     monkeypatch.setattr("app.ingestion.pipeline.tag_cafe", fake_tagger)
-    monkeypatch.setattr(
-        "app.ingestion.pipeline.Embedder.embed", lambda self, text: fake_embed(text)
-    )
+    monkeypatch.setattr("app.ingestion.pipeline.Embedder.embed_many", fake_embed_many)
     monkeypatch.setattr("app.ingestion.pipeline.PLACES_CACHE_DIR", tmp_path / "places_raw")
 
     await run_pipeline(

@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "description": "Labeled queries -> ground-truth HARD-CONSTRAINT slots for the tag-error A/B (naive vibe-into-SQL extractor vs the current separated design). gold is what a correct SQL filter must be: a slot is true/<int> only when the query EXPLICITLY asks for it, else null. semantic_query is intentionally not scored (free text, not a tag). 'trap' items contain vibe words that resemble constraints; that is where the naive design over-fires and separation wins.",
+  "items": [
+    {
+      "id": "t01",
+      "lang": "en",
+      "category": "vibe",
+      "query": "cozy reading nook with natural light",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "pure vibe; no hard constraint"
+    },
+    {
+      "id": "t02",
+      "lang": "en",
+      "category": "vibe",
+      "query": "good first date spot not too loud",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "pure vibe"
+    },
+    {
+      "id": "t03",
+      "lang": "en",
+      "category": "vibe",
+      "query": "warm minimalist place for a slow morning",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "pure vibe; 'morning' is not 'open_now'"
+    },
+    {
+      "id": "t04",
+      "lang": "en",
+      "category": "vibe",
+      "query": "aesthetic spot to journal and people-watch",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "pure vibe"
+    },
+    {
+      "id": "t05",
+      "lang": "en",
+      "category": "constraint",
+      "query": "cafe with power outlets for my laptop",
+      "gold": { "has_outlet": true, "open_now": null, "price_max": null },
+      "note": "explicit outlet"
+    },
+    {
+      "id": "t06",
+      "lang": "en",
+      "category": "constraint",
+      "query": "somewhere open right now near campus",
+      "gold": { "has_outlet": null, "open_now": true, "price_max": null },
+      "note": "explicit open now"
+    },
+    {
+      "id": "t07",
+      "lang": "en",
+      "category": "constraint",
+      "query": "cheap coffee under two dollars",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": 1 },
+      "note": "explicit budget -> price_max 1"
+    },
+    {
+      "id": "t08",
+      "lang": "en",
+      "category": "constraint",
+      "query": "mid-range latte spot around five bucks",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": 2 },
+      "note": "explicit moderate price -> 2"
+    },
+    {
+      "id": "t09",
+      "lang": "en",
+      "category": "constraint",
+      "query": "outlets, open now, and budget-friendly please",
+      "gold": { "has_outlet": true, "open_now": true, "price_max": 1 },
+      "note": "all three explicit"
+    },
+    {
+      "id": "t10",
+      "lang": "en",
+      "category": "trap",
+      "query": "cheap thrills high-energy vibe",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "'cheap thrills' is a vibe idiom, not a price ask"
+    },
+    {
+      "id": "t11",
+      "lang": "en",
+      "category": "trap",
+      "query": "near the outlet mall, any good coffee around there?",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "'outlet mall' is a place, not a power outlet"
+    },
+    {
+      "id": "t12",
+      "lang": "en",
+      "category": "trap",
+      "query": "wide open airy space with big windows",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "'open' means spacious, not open_now"
+    },
+    {
+      "id": "t13",
+      "lang": "en",
+      "category": "trap",
+      "query": "great spot to work on my novel for hours",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "'work' is writing; no explicit outlet/charging ask"
+    },
+    {
+      "id": "t14",
+      "lang": "en",
+      "category": "trap",
+      "query": "open-minded artsy crowd and good music",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "'open-minded' is not open_now"
+    },
+    {
+      "id": "t15",
+      "lang": "zh",
+      "category": "vibe",
+      "query": "安静适合看书的咖啡馆",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "quiet, good for reading; pure vibe"
+    },
+    {
+      "id": "t16",
+      "lang": "zh",
+      "category": "vibe",
+      "query": "适合约会氛围温馨的地方",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "cozy date spot; pure vibe"
+    },
+    {
+      "id": "t17",
+      "lang": "zh",
+      "category": "vibe",
+      "query": "采光好适合发呆的角落",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "good light, good for spacing out; pure vibe"
+    },
+    {
+      "id": "t18",
+      "lang": "zh",
+      "category": "constraint",
+      "query": "有插座可以用电脑的咖啡店",
+      "gold": { "has_outlet": true, "open_now": null, "price_max": null },
+      "note": "explicit 插座 (outlet)"
+    },
+    {
+      "id": "t19",
+      "lang": "zh",
+      "category": "constraint",
+      "query": "现在还营业的咖啡馆",
+      "gold": { "has_outlet": null, "open_now": true, "price_max": null },
+      "note": "explicit 营业 / now open"
+    },
+    {
+      "id": "t20",
+      "lang": "zh",
+      "category": "constraint",
+      "query": "便宜的咖啡 适合学生党",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": 1 },
+      "note": "explicit 便宜 (cheap) -> 1"
+    },
+    {
+      "id": "t21",
+      "lang": "zh",
+      "category": "constraint",
+      "query": "有插座 现在营业 而且便宜的咖啡店",
+      "gold": { "has_outlet": true, "open_now": true, "price_max": 1 },
+      "note": "all three explicit in Chinese"
+    },
+    {
+      "id": "t22",
+      "lang": "zh",
+      "category": "trap",
+      "query": "氛围很开放的咖啡馆",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "开放 = open/liberal atmosphere, NOT open_now"
+    },
+    {
+      "id": "t23",
+      "lang": "zh",
+      "category": "trap",
+      "query": "插画风格很可爱的咖啡馆",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "插画 = illustration; shares 插 with 插座 but is not an outlet ask"
+    },
+    {
+      "id": "t24",
+      "lang": "zh",
+      "category": "trap",
+      "query": "想找个便宜行事低调的地方聊天",
+      "gold": { "has_outlet": null, "open_now": null, "price_max": null },
+      "note": "便宜行事 = act as one sees fit; contains 便宜 but is not a price ask"
+    }
+  ]
+}

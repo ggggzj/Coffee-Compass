@@ -9,13 +9,29 @@ os.environ.setdefault("TESTCONTAINERS_RYUK_DISABLED", "true")
 
 from collections.abc import AsyncIterator  # noqa: E402
 
+import pytest  # noqa: E402
 import pytest_asyncio  # noqa: E402
 from sqlalchemy import text  # noqa: E402
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from testcontainers.postgres import PostgresContainer  # noqa: E402
 
 from app import models  # noqa: F401, E402
 from app.db import Base  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _reset_slot_cache():
+    """Clear the module-level /search slot cache between tests so a cached query
+    from one test cannot leak a result into another."""
+    from app.api.search import reset_slot_cache
+
+    reset_slot_cache()
+    yield
+    reset_slot_cache()
 
 
 @pytest_asyncio.fixture(scope="session")
