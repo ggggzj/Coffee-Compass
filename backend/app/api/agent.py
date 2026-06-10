@@ -7,6 +7,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agent.memory import Memory, get_memory
 from app.agent.react_agent import run_chat
 from app.config import get_settings
 from app.db import get_session
@@ -29,12 +30,18 @@ async def agent_chat(
     req: AgentChatRequest,
     session: Annotated[AsyncSession, Depends(get_session)],
     model: Annotated[BaseChatModel, Depends(get_agent_model)],
+    memory: Annotated[Memory, Depends(get_memory)],
 ) -> AgentChatResponse:
     # user_id is accepted but dormant in v1 (see ADR-0002): the seam is kept so the
     # Zep / Preference Summary swap-in later touches neither the API nor the client.
+    history = memory.load(req.session_id)
     reply, recommendations = await run_chat(
-        session=session, model=model, message=req.message
+        session=session, model=model, message=req.message, history=history
     )
+    # Append only after a successful response, so a mid-turn failure never leaves a
+    # half-Turn in the Conversation (Q6, append-after-respond).
+    memory.append(req.session_id, "user", req.message)
+    memory.append(req.session_id, "assistant", reply)
     return AgentChatResponse(
         reply=reply,
         recommendations=[RecommendedCafe(**r) for r in recommendations],
