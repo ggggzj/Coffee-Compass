@@ -1,0 +1,55 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.chatCol {
+  width: 420px;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.mapCol {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: #eee7da;
+}
+
+.mapPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #8a8170;
+  padding: 24px;
+}
+.mapPlaceholder ul {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  max-width: 360px;
+}
+.mapPlaceholder li {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd4c2;
+}
+.activeRow {
+  background: #5b3a1a;
+  color: #fff;
+  border-radius: 6px;
+}
+
+@media (max-width: 720px) {
+  .layout {
+    flex-direction: column;
+  }
+  .chatCol {
+    width: 100%;
+    height: 60%;
+  }
+}
