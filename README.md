@@ -79,9 +79,12 @@ npm run dev                                   # http://localhost:3000
 ### Environment
 
 - **Backend** (`backend/.env`): `AGENT_MODEL` (default `gpt-4o-mini`) plus the
-  existing `OPENAI_API_KEY` / `DATABASE_URL`. Multi-turn memory is **in-process**
-  by default; Zep is intentionally deferred (see ADR-0002), so no extra service
-  is required for the demo.
+  existing `OPENAI_API_KEY` / `DATABASE_URL`. Memory is **in-process** by default
+  (`AGENT_MEMORY_IMPL=memory`): within a session it keeps Conversation history,
+  and per `user_id` it keeps a cross-Conversation Preference Summary that shapes
+  later sessions. `AGENT_MEMORY_IMPL=zep` is the deferred LLM-distilled swap-in
+  (see ADR-0002) — it falls back to in-process until the adapter is wired, so no
+  extra service is required for the demo.
 - **Frontend** (`frontend/.env.local`, gitignored): `NEXT_PUBLIC_API_BASE` and
   `NEXT_PUBLIC_MAPBOX_TOKEN`. Use the Mapbox **public** token (`pk.…`) — it is
   safe to ship to the browser; restrict it by domain in the Mapbox dashboard.

@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     embedding_model: str = Field("text-embedding-3-small", alias="EMBEDDING_MODEL")
     review_tagger_impl: str = Field("v1", alias="REVIEW_TAGGER_IMPL")
     agent_model: str = Field("gpt-4o-mini", alias="AGENT_MODEL")
+    agent_memory_impl: str = Field("memory", alias="AGENT_MEMORY_IMPL")  # "memory" | "zep"
+    zep_api_key: str = Field("", alias="ZEP_API_KEY")
 
 
 def get_settings() -> Settings:

@@ -1,13 +1,19 @@
-# 11 — Zep / Preference Summary (deferred)
+# 11 — Zep / Preference Summary
 
-Status: needs-triage
+Status: ready-for-human
 Type: HITL
+
+> **Update:** Triaged "feature now, Zep as adapter." The cross-Conversation
+> Preference Summary now ships **in-process** (keyed by `user_id`, prepended to
+> the agent's system prompt, tested end-to-end). The Memory protocol carries
+> `user_id`; the API contract and frontend were untouched (ADR-0002). What
+> remains (HITL): wire the `ZepMemory` adapter stub against the real Zep SDK once
+> a Zep account + key exist — `AGENT_MEMORY_IMPL=zep` already selects it and falls
+> back to in-process until then.
 
 ## What to build
 
-> Deliberately deferred from the Week 3 v1 scope (see ADR-0002). Captured here so
-> it is not lost. **Not ready for an AFK agent** — needs triage / a Zep account
-> decision first.
+> Original scope below — deferred Zep portion only remains.
 
 A `ZepMemory` implementation behind the existing `Memory` protocol that gives a
 **User** (keyed by `user_id`) a cross-Conversation **Preference Summary** — a

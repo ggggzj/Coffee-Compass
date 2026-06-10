@@ -64,13 +64,21 @@ class PresentRecommendationsArgs(BaseModel):
     rationale: str = Field("", description="A short overall rationale for the picks.")
 
 
-def build_agent(session: AsyncSession, model: BaseChatModel):
+def build_agent(
+    session: AsyncSession, model: BaseChatModel, *, system_preamble: str | None = None
+):
     """Build a per-request agent over the search tools, closing over a fresh
-    TurnContext. Returns (agent, turn_context)."""
+    TurnContext. Returns (agent, turn_context).
+
+    ``system_preamble`` (e.g. a User's cross-Conversation Preference Summary) is
+    appended to the base system prompt so it shapes this turn's recommendations."""
     turn = TurnContext()
     tools = build_agent_tools(
         session, on_results=turn.record_shops, max_searches=DEFAULT_MAX_SEARCHES
     )
+    system_prompt = SYSTEM_PROMPT
+    if system_preamble:
+        system_prompt = f"{SYSTEM_PROMPT}\n\n{system_preamble}"
 
     async def present_recommendations(cafe_ids: list[int], rationale: str = "") -> str:
         turn.declared_ids = list(cafe_ids)
@@ -87,7 +95,7 @@ def build_agent(session: AsyncSession, model: BaseChatModel):
         args_schema=PresentRecommendationsArgs,
     )
 
-    agent = create_agent(model, [*tools, present_tool], system_prompt=SYSTEM_PROMPT)
+    agent = create_agent(model, [*tools, present_tool], system_prompt=system_prompt)
     return agent, turn
 
 
@@ -104,13 +112,14 @@ async def run_chat(
     model: BaseChatModel,
     message: str,
     history: list[BaseMessage] | None = None,
+    system_preamble: str | None = None,
 ) -> tuple[str, list[dict]]:
     """Run one agent turn and assemble its grounded final payload.
 
     Returns (reply_prose, recommendations). The recommendations are always built
     from TurnContext, so the payload is guaranteed even if the model never calls
     present_recommendations."""
-    agent, turn = build_agent(session, model)
+    agent, turn = build_agent(session, model, system_preamble=system_preamble)
     messages = [*(history or []), HumanMessage(content=message)]
     try:
         out = await agent.ainvoke(
@@ -135,6 +144,7 @@ async def stream_chat(
     model: BaseChatModel,
     message: str,
     history: list[BaseMessage] | None = None,
+    system_preamble: str | None = None,
 ):
     """Run one agent turn, yielding (event_type, data) as the ReAct loop unfolds.
 
@@ -142,7 +152,7 @@ async def stream_chat(
     'observation' (a tool result), and exactly one terminal 'final' carrying the
     grounded payload from TurnContext. The 'final' event is always emitted, so the
     map is never left empty even on a prose-only or tool-less turn (Q8)."""
-    agent, turn = build_agent(session, model)
+    agent, turn = build_agent(session, model, system_preamble=system_preamble)
     messages = [*(history or []), HumanMessage(content=message)]
     reply = ""
     try:

@@ -34,14 +34,19 @@ async def agent_chat(
     model: Annotated[BaseChatModel, Depends(get_agent_model)],
     memory: Annotated[Memory, Depends(get_memory)],
 ) -> EventSourceResponse:
-    # user_id is accepted but dormant in v1 (see ADR-0002): the seam is kept so the
-    # Zep / Preference Summary swap-in later touches neither the API nor the client.
-    history = memory.load(req.session_id)
+    # session_id scopes this Conversation's recent Turns; user_id scopes the User's
+    # cross-Conversation Preference Summary (ADR-0002 — the seam is now wired up).
+    history = memory.load(session_id=req.session_id, user_id=req.user_id)
+    preamble = memory.preference_preamble(user_id=req.user_id)
 
     async def event_stream():
         reply: str | None = None
         async for event_type, data in stream_chat(
-            session=session, model=model, message=req.message, history=history
+            session=session,
+            model=model,
+            message=req.message,
+            history=history,
+            system_preamble=preamble,
         ):
             if event_type == "final":
                 reply = data["reply"]
@@ -55,7 +60,11 @@ async def agent_chat(
         # Append only after the stream completes successfully, so a mid-turn failure
         # never leaves a half-Turn in the Conversation (Q6, append-after-respond).
         if reply is not None:
-            memory.append(req.session_id, "user", req.message)
-            memory.append(req.session_id, "assistant", reply)
+            memory.append(
+                session_id=req.session_id, user_id=req.user_id, role="user", content=req.message
+            )
+            memory.append(
+                session_id=req.session_id, user_id=req.user_id, role="assistant", content=reply
+            )
 
     return EventSourceResponse(event_stream())

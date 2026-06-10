@@ -58,7 +58,7 @@ async def test_prior_turn_is_replayed_and_persisted(pgvector_url, monkeypatch):
     assert r1.status_code == 200
 
     # The Turn was persisted (append-after-respond): user message + assistant reply.
-    hist = memory.load("s1")
+    hist = memory.load(session_id="s1", user_id="demo-user")
     assert [m.content for m in hist] == ["quiet study spot", "Bricks is a great quiet spot."]
 
     # --- Turn 2 (same session) ---
@@ -127,4 +127,69 @@ async def test_failed_turn_does_not_poison_memory(pgvector_url, monkeypatch):
         await test_engine.dispose()
 
     # The Turn never completed, so nothing was appended — no half-Turn poisoning.
-    assert memory.load("s1") == []
+    assert memory.load(session_id="s1", user_id="demo-user") == []
+
+
+@pytest.mark.asyncio
+async def test_preference_summary_crosses_conversations_but_history_does_not(
+    pgvector_url, monkeypatch
+):
+    from app.agent.memory import InProcessMemory, get_memory
+    from app.api.agent import get_agent_model
+
+    test_engine = create_async_engine(pgvector_url)
+    TestSession = async_sessionmaker(test_engine, expire_on_commit=False)
+    async with test_engine.begin() as conn:
+        await conn.execute(text("TRUNCATE TABLE cafes RESTART IDENTITY CASCADE"))
+    async with TestSession() as s:
+        s.add(seed_cafe(google_place_id="A", name="Bricks"))
+        await s.commit()
+
+    async def override_session():
+        async with TestSession() as s:
+            yield s
+
+    monkeypatch.setattr("app.search.service.extract_slots", fake_extract)
+    monkeypatch.setattr("app.search.embedder.Embedder.embed", fake_embed)
+
+    memory = InProcessMemory()
+    app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_memory] = lambda: memory
+
+    # --- Conversation 1 (session conv1, user alice) ---
+    fake1 = FakeToolCallingModel(
+        responses=[
+            calls("search_shops", {"query": "quiet study spot with outlets"}),
+            calls("present_recommendations", {"cafe_ids": [1], "rationale": "x"}, "c2"),
+            final("Bricks works for studying."),
+        ]
+    )
+    app.dependency_overrides[get_agent_model] = lambda: fake1
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        await client.post(
+            "/agent/chat",
+            json={
+                "session_id": "conv1",
+                "user_id": "alice",
+                "message": "quiet study spot with outlets",
+            },
+        )
+
+    # --- Conversation 2: a NEW session for the SAME user ---
+    fake2 = FakeToolCallingModel(responses=[final("Here are some options.")])
+    app.dependency_overrides[get_agent_model] = lambda: fake2
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        await client.post(
+            "/agent/chat",
+            json={"session_id": "conv2", "user_id": "alice", "message": "more please"},
+        )
+
+    app.dependency_overrides.clear()
+    await test_engine.dispose()
+
+    captured = " ".join(str(getattr(m, "content", "")) for m in (fake2.captured or []))
+    # The User's standing preference carried across Conversations (via the preamble)...
+    assert "quiet study spot with outlets" in captured
+    # ...but the prior Conversation's history did NOT leak into the new session:
+    # conv1's assistant reply never reaches conv2's agent.
+    assert "Bricks works for studying." not in captured
