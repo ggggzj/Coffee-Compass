@@ -52,6 +52,85 @@ Then `POST http://localhost:8000/search` with `{"query": "quiet place with outle
    queries, golden set v2). These are the **starting** numbers; Week 4 iterates to
    improve `context_precision`. Re-run the command to reproduce after repopulating the DB.
 
+## Week 3 — Conversational agent + web UI
+
+Week 3 turns the search backend into a demo-able product: a multi-turn
+**LangChain agent** at `POST /agent/chat` that wraps the Week 1 retriever as
+tools and streams its reasoning, plus a **Next.js + Mapbox** frontend with a
+streaming chat panel and a map that pins the recommended cafes.
+
+### Run the full stack
+
+```bash
+# 1. Database (Postgres + pgvector)
+cd infra && docker compose up -d
+
+# 2. Backend (terminal A) — uv installs the agent group by default now
+cd backend && uv sync && uv run alembic upgrade head
+uv run uvicorn app.main:app --reload          # http://localhost:8000
+
+# 3. Frontend (terminal B)
+cd frontend
+cp .env.local.example .env.local              # then paste your Mapbox token
+npm install
+npm run dev                                   # http://localhost:3000
+```
+
+### Environment
+
+- **Backend** (`backend/.env`): `AGENT_MODEL` (default `gpt-4o-mini`) plus the
+  existing `OPENAI_API_KEY` / `DATABASE_URL`. Multi-turn memory is **in-process**
+  by default; Zep is intentionally deferred (see ADR-0002), so no extra service
+  is required for the demo.
+- **Frontend** (`frontend/.env.local`, gitignored): `NEXT_PUBLIC_API_BASE` and
+  `NEXT_PUBLIC_MAPBOX_TOKEN`. Use the Mapbox **public** token (`pk.…`) — it is
+  safe to ship to the browser; restrict it by domain in the Mapbox dashboard.
+
+### Demo flow
+
+Open `http://localhost:3000` and run the three-turn conversation — the map pins
+update to match each answer:
+
+1. *"a quiet place to study with outlets near USC"*
+2. *"anything cheaper?"* — stays on the same need, just adds the price constraint
+3. *"open now?"*
+
+### How it works
+
+- **Grounded recommendations.** The agent's final act is to declare the cafe ids
+  it recommends; the backend hydrates those into the `final` event from the cafes
+  the tools actually returned — pins are never parsed from prose, so a pin can
+  only exist for a cafe that was really retrieved (see `docs/adr/0001`).
+- **Streaming.** `POST /agent/chat` is Server-Sent Events: `thought` / `action` /
+  `observation` steps followed by exactly one guaranteed `final`. Verify raw with
+  `curl -N`:
+
+  ```bash
+  curl -N -X POST http://localhost:8000/agent/chat \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id":"demo","user_id":"demo-user","message":"quiet study spot with outlets"}'
+  ```
+
+- **One search per turn.** A system-prompt rule plus a hard per-turn search cap
+  stop the agent from re-running the same search reworded with synonyms.
+- **Detail pages.** `GET /cafes/{id}` backs `/cafe/[id]`; chat chips and map pins
+  link to it. The route and the agent's `get_shop_detail` tool share one
+  cafe-by-id load path.
+
+Domain vocabulary lives in `CONTEXT.md`; architectural decisions in `docs/adr/`.
+
+### Measured numbers
+
+Honest, reproducible figures for this build (52-cafe DB):
+
+- **Dataset:** 52 curated USC-area cafes, all embedded.
+- **Slot-tagging A/B** (`uv run python -m app.eval.tag_error`): **~92% fewer
+  hard-filter errors** vs a naive single-prompt extractor (39 → 3 over 24
+  queries / 72 slots).
+- **Latency** (`k6 run backend/loadtest/search.js`): pgvector retrieval-stage
+  **p95 ≈ 73ms**; cached request **p95 ≈ 25ms** vs ~1.4s uncached (the
+  in-process slot cache skips the OpenAI calls on repeated queries).
+
 ## Week 1 verification (Postman or curl)
 
 After running ingestion against real APIs (or the smoke seeder for a quick check):
