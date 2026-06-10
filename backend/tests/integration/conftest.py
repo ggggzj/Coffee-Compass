@@ -25,9 +25,10 @@ from app.db import Base  # noqa: E402
 
 @pytest.fixture(autouse=True)
 def _reset_slot_cache():
-    """Clear the module-level /search slot cache between tests so a cached query
-    from one test cannot leak a result into another."""
-    from app.api.search import reset_slot_cache
+    """Clear the shared search-pipeline slot cache between tests so a cached query
+    from one test cannot leak a result into another. The cache is the single
+    instance in app.search.service, shared by /search and the agent tools."""
+    from app.search.service import reset_slot_cache
 
     reset_slot_cache()
     yield

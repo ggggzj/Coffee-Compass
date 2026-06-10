@@ -21,6 +21,8 @@ class SearchResult(BaseModel):
     id: int
     name: str
     address: str
+    lat: float
+    lng: float
     rating: float | None
     price_level: int | None
     has_outlet: bool | None

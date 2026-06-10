@@ -62,7 +62,7 @@ async def test_search_endpoint_end_to_end(pgvector_url, monkeypatch):
     async def fake_embed(self, text: str):
         return [0.1] * 1536
 
-    monkeypatch.setattr("app.api.search.extract_slots", fake_extract)
+    monkeypatch.setattr("app.search.service.extract_slots", fake_extract)
     monkeypatch.setattr("app.search.embedder.Embedder.embed", fake_embed)
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -77,3 +77,44 @@ async def test_search_endpoint_end_to_end(pgvector_url, monkeypatch):
     assert body["parsed"]["filters"]["has_outlet"] is True
     names = [x["name"] for x in body["results"]]
     assert names == ["Bricks"]  # NoOutlet was filtered out
+
+
+@pytest.mark.asyncio
+async def test_search_endpoint_returns_coordinates(pgvector_url, monkeypatch):
+    test_engine = create_async_engine(pgvector_url)
+    TestSession = async_sessionmaker(test_engine, expire_on_commit=False)
+
+    async with test_engine.begin() as conn:
+        await conn.execute(text("TRUNCATE TABLE cafes RESTART IDENTITY CASCADE"))
+
+    async with TestSession() as s:
+        s.add(_seed_cafe(google_place_id="A", name="Bricks", lat=34.0205, lng=-118.2855))
+        await s.commit()
+
+    async def override_session():
+        async with TestSession() as s:
+            yield s
+
+    app.dependency_overrides[get_session] = override_session
+
+    async def fake_extract(**kwargs):
+        return ParsedQuery(
+            semantic_query="quiet study spot", has_outlet=None, open_now=None, price_max=None
+        )
+
+    async def fake_embed(self, text: str):
+        return [0.1] * 1536
+
+    monkeypatch.setattr("app.search.service.extract_slots", fake_extract)
+    monkeypatch.setattr("app.search.embedder.Embedder.embed", fake_embed)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        r = await client.post("/search", json={"query": "quiet", "top_k": 5})
+
+    app.dependency_overrides.clear()
+    await test_engine.dispose()
+
+    assert r.status_code == 200
+    result = r.json()["results"][0]
+    assert result["lat"] == pytest.approx(34.0205)
+    assert result["lng"] == pytest.approx(-118.2855)

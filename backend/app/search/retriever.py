@@ -24,6 +24,8 @@ class RetrievalResult:
     id: int
     name: str
     address: str
+    lat: float
+    lng: float
     rating: float | None
     price_level: int | None
     has_outlet: bool | None
@@ -64,6 +66,8 @@ class Retriever:
                     id=cafe.id,
                     name=cafe.name,
                     address=cafe.address,
+                    lat=cafe.lat,
+                    lng=cafe.lng,
                     rating=cafe.rating,
                     price_level=cafe.price_level,
                     has_outlet=cafe.has_outlet,
