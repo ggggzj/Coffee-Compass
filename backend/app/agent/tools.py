@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from langchain_core.tools import BaseTool, StructuredTool
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -56,16 +58,27 @@ def _shop_summary(r) -> dict:
     }
 
 
-def build_agent_tools(session: AsyncSession) -> list[BaseTool]:
+def build_agent_tools(
+    session: AsyncSession,
+    *,
+    on_results: Callable[[list[dict]], None] | None = None,
+) -> list[BaseTool]:
     """Build the agent's tools, closing over this request's database session.
 
     Constructed per request (not a process-wide singleton) because data access is
     request-scoped — every tool call runs inside the caller's session.
+
+    ``on_results`` is invoked with each search_shops result batch so the agent
+    layer can track which cafes were surfaced this turn (for grounded
+    recommendations + the guaranteed-final fallback).
     """
 
     async def search_shops(query: str, top_k: int = 5) -> list[dict]:
         outcome = await search_cafes(query=query, top_k=top_k, session=session)
-        return [_shop_summary(r) for r in outcome.results]
+        summaries = [_shop_summary(r) for r in outcome.results]
+        if on_results is not None:
+            on_results(summaries)
+        return summaries
 
     async def get_shop_detail(cafe_id: int) -> dict:
         cafe = await get_cafe(cafe_id=cafe_id, session=session)

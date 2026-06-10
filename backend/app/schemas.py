@@ -37,3 +37,26 @@ class SearchResult(BaseModel):
 class SearchResponse(BaseModel):
     parsed: ParsedQuerySchema
     results: list[SearchResult]
+
+
+class AgentChatRequest(BaseModel):
+    session_id: str = Field(..., min_length=1)
+    user_id: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1)
+
+
+class RecommendedCafe(BaseModel):
+    id: int
+    name: str
+    lat: float
+    lng: float
+    price_level: int | None = None
+    has_outlet: bool | None = None
+    noise_level: str | None = None
+    ambience_text: str | None = None
+    open_now: bool | None = None
+
+
+class AgentChatResponse(BaseModel):
+    reply: str
+    recommendations: list[RecommendedCafe]
