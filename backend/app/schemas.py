@@ -55,8 +55,3 @@ class RecommendedCafe(BaseModel):
     noise_level: str | None = None
     ambience_text: str | None = None
     open_now: bool | None = None
-
-
-class AgentChatResponse(BaseModel):
-    reply: str
-    recommendations: list[RecommendedCafe]

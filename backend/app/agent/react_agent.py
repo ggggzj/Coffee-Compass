@@ -101,3 +101,45 @@ async def run_chat(
     out = await agent.ainvoke({"messages": messages})
     reply = _last_ai_text(out["messages"])
     return reply, turn.recommendations()
+
+
+def _tool_output_str(output) -> str:
+    content = getattr(output, "content", output)
+    text = content if isinstance(content, str) else str(content)
+    return text[:500]
+
+
+async def stream_chat(
+    *,
+    session: AsyncSession,
+    model: BaseChatModel,
+    message: str,
+    history: list[BaseMessage] | None = None,
+):
+    """Run one agent turn, yielding (event_type, data) as the ReAct loop unfolds.
+
+    Event types: 'thought' (reasoning before an action), 'action' (a tool call),
+    'observation' (a tool result), and exactly one terminal 'final' carrying the
+    grounded payload from TurnContext. The 'final' event is always emitted, so the
+    map is never left empty even on a prose-only or tool-less turn (Q8)."""
+    agent, turn = build_agent(session, model)
+    messages = [*(history or []), HumanMessage(content=message)]
+    reply = ""
+    async for ev in agent.astream_events({"messages": messages}, version="v2"):
+        etype = ev["event"]
+        data = ev.get("data", {})
+        if etype == "on_chat_model_end":
+            out = data.get("output")
+            content = getattr(out, "content", "") or ""
+            text = content if isinstance(content, str) else str(content)
+            if getattr(out, "tool_calls", None):
+                if text:
+                    yield "thought", {"text": text}
+            else:
+                reply = text  # an AI message with no tool calls is the final answer
+        elif etype == "on_tool_start":
+            yield "action", {"tool": ev.get("name"), "input": data.get("input")}
+        elif etype == "on_tool_end":
+            output = _tool_output_str(data.get("output"))
+            yield "observation", {"tool": ev.get("name"), "output": output}
+    yield "final", {"reply": reply, "recommendations": turn.recommendations()}
