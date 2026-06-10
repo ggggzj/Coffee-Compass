@@ -33,6 +33,18 @@ eval = [
     "ragas>=0.1.0",
     "datasets>=2.14.0",
 ]
+agent = [
+    "langchain>=0.3",
+    "langchain-openai>=0.2",
+    "sse-starlette>=2.1",
+    # zep-cloud is intentionally omitted: the User-scoped Preference Summary is
+    # deferred behind the Memory protocol (see ADR-0002 / card 11). Add it then.
+]
+
+[tool.uv]
+# Install all tooling groups by default so `uv sync` / `uv run` never silently
+# drops one (e.g. eval) when another (agent) is requested.
+default-groups = ["dev", "eval", "agent"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
