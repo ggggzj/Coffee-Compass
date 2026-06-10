@@ -37,3 +37,12 @@
 .open {
   color: #2f8f4e;
 }
+.detailsLink {
+  display: block;
+  margin-top: 6px;
+  color: #5b3a1a;
+  font-weight: 600;
+}
+.detailsLink:hover {
+  text-decoration: underline;
+}

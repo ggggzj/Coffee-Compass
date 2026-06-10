@@ -5,6 +5,7 @@
 // so swapping Mapbox for another provider means rewriting only this file.
 
 import { useMemo } from "react";
+import Link from "next/link";
 import Map, { Marker, Popup } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Recommendation } from "@/lib/api";
@@ -88,6 +89,9 @@ export default function MapPanel({
             <strong>{selected.name}</strong>
             {selected.price_level != null && <span> · {"$".repeat(selected.price_level)}</span>}
             {selected.open_now && <span className={styles.open}> · open</span>}
+            <Link href={`/cafe/${selected.id}`} className={styles.detailsLink}>
+              View details →
+            </Link>
           </div>
         </Popup>
       )}

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.agent import router as agent_router
+from app.api.cafes import router as cafes_router
 from app.api.search import router as search_router
 from app.observability import TimingMiddleware
 
@@ -16,6 +17,7 @@ app.add_middleware(
 app.add_middleware(TimingMiddleware)
 app.include_router(search_router)
 app.include_router(agent_router)
+app.include_router(cafes_router)
 
 
 @app.get("/health")

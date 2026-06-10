@@ -22,7 +22,32 @@ export type AgentEvent =
   | { event: "observation"; data: { tool: string; output: string } }
   | { event: "final"; data: { reply: string; recommendations: Recommendation[] } };
 
+export type CafeDetail = {
+  id: number;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  rating: number | null;
+  review_count: number | null;
+  price_level: number | null;
+  categories: string[] | null;
+  opening_hours: Record<string, unknown> | null;
+  has_wifi: boolean | null;
+  has_outlet: boolean | null;
+  noise_level: string | null;
+  good_for_studying: boolean | null;
+  ambience_text: string;
+  editorial_summary: string | null;
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+
+export async function fetchCafe(id: string | number): Promise<CafeDetail> {
+  const res = await fetch(`${API_BASE}/cafes/${id}`);
+  if (!res.ok) throw new Error(`cafe ${id}: ${res.status}`);
+  return res.json();
+}
 
 function parseFrame(frame: string): AgentEvent | null {
   let event = "";

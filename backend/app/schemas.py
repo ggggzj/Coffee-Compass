@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SearchRequest(BaseModel):
@@ -55,3 +55,24 @@ class RecommendedCafe(BaseModel):
     noise_level: str | None = None
     ambience_text: str | None = None
     open_now: bool | None = None
+
+
+class CafeDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    address: str
+    lat: float
+    lng: float
+    rating: float | None = None
+    review_count: int | None = None
+    price_level: int | None = None
+    categories: list[str] | None = None
+    opening_hours: dict | None = None
+    has_wifi: bool | None = None
+    has_outlet: bool | None = None
+    noise_level: str | None = None
+    good_for_studying: bool | None = None
+    ambience_text: str = ""
+    editorial_summary: str | None = None

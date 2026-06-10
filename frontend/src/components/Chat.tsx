@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Recommendation } from "@/lib/api";
 import styles from "./Chat.module.css";
 
@@ -50,17 +51,16 @@ function RecommendationChips({
   return (
     <div className={styles.recs}>
       {recs.map((r) => (
-        <button
+        <Link
           key={r.id}
-          type="button"
+          href={`/cafe/${r.id}`}
           className={`${styles.recChip} ${selectedId === r.id ? styles.recChipActive : ""}`}
           onMouseEnter={() => onSelect(r.id)}
-          onClick={() => onSelect(r.id)}
         >
           <span className={styles.recName}>{r.name}</span>
           {r.price_level != null && <span className={styles.recMeta}>{"$".repeat(r.price_level)}</span>}
           {r.open_now && <span className={styles.recOpen}>open</span>}
-        </button>
+        </Link>
       ))}
     </div>
   );
@@ -81,8 +81,7 @@ export default function Chat({
 }) {
   const [input, setInput] = useState("");
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
+  function submit() {
     const text = input.trim();
     if (!text || busy) return;
     setInput("");
@@ -121,7 +120,13 @@ export default function Chat({
         )}
       </div>
 
-      <form className={styles.inputRow} onSubmit={submit}>
+      <form
+        className={styles.inputRow}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit();
+        }}
+      >
         <input
           className={styles.input}
           value={input}
