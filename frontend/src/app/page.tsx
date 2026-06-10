@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Chat, { type ChatMessage, type Step } from "@/components/Chat";
+import MapPanel from "@/components/MapPanel";
 import { streamAgentChat, type Recommendation } from "@/lib/api";
 import styles from "./page.module.css";
 
@@ -90,24 +91,11 @@ export default function Home() {
         />
       </div>
       <div className={styles.mapCol}>
-        {/* Card 08 replaces this placeholder with the Mapbox MapPanel. */}
-        <div className={styles.mapPlaceholder}>
-          {recommendations.length === 0 ? (
-            <p>Recommended cafes will appear here.</p>
-          ) : (
-            <ul>
-              {recommendations.map((r) => (
-                <li
-                  key={r.id}
-                  className={selectedCafeId === r.id ? styles.activeRow : ""}
-                  onMouseEnter={() => setSelectedCafeId(r.id)}
-                >
-                  {r.name} ({r.lat.toFixed(4)}, {r.lng.toFixed(4)})
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <MapPanel
+          recommendations={recommendations}
+          selectedCafeId={selectedCafeId}
+          onSelectCafe={setSelectedCafeId}
+        />
       </div>
     </main>
   );

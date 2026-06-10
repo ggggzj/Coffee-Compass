@@ -18,32 +18,6 @@
   background: #eee7da;
 }
 
-.mapPlaceholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  color: #8a8170;
-  padding: 24px;
-}
-.mapPlaceholder ul {
-  list-style: none;
-  padding: 0;
-  width: 100%;
-  max-width: 360px;
-}
-.mapPlaceholder li {
-  padding: 8px 12px;
-  border-bottom: 1px solid #ddd4c2;
-}
-.activeRow {
-  background: #5b3a1a;
-  color: #fff;
-  border-radius: 6px;
-}
-
 @media (max-width: 720px) {
   .layout {
     flex-direction: column;

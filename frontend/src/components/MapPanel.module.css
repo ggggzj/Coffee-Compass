@@ -1,0 +1,39 @@
+.hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: #8a8170;
+  line-height: 1.7;
+}
+.hint code {
+  background: #ece5d8;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.pin {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+  transform: scale(1);
+  transition: transform 0.12s;
+}
+.pinActive {
+  transform: scale(1.6);
+}
+
+.popup {
+  font-size: 13px;
+  color: #2c2620;
+}
+.open {
+  color: #2f8f4e;
+}
