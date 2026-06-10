@@ -6,20 +6,32 @@ from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.tools import StructuredTool
+from langgraph.errors import GraphRecursionError
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agent.tools import build_agent_tools
+from app.agent.tools import DEFAULT_MAX_SEARCHES, build_agent_tools
 
 SYSTEM_PROMPT = (
     "You are CoffeeCompass, a concise local coffee guide for the USC/LA area. "
     "Use the tools to ground every recommendation in real shops — never invent "
-    "cafes. Recommend 3-5 cafes with a one-line rationale each. When you have "
-    "chosen which cafes to recommend, call present_recommendations with their ids "
-    "before giving your final answer."
+    "cafes.\n"
+    "Search ONCE: write a single natural-language query that captures everything "
+    "the user wants (vibe, price, outlets, open-now), then use whatever it "
+    "returns. Do NOT re-search by rewording or swapping synonyms (e.g. cheap -> "
+    "affordable -> budget) to try to find more — one search is enough.\n"
+    "Recommend up to 5 cafes with a one-line rationale each. Fewer than 3 is "
+    "perfectly fine when few match — do not keep hunting. When you have chosen "
+    "which cafes to recommend, call present_recommendations with their ids before "
+    "giving your final answer."
 )
 
 MAX_RECOMMENDATIONS = 5
+
+# Hard backstop on agent super-steps (model+tool turns). The search budget in
+# build_agent_tools is the practical cap; this guarantees the graph can never loop
+# even if the model ignores tool messages. Normal turns use ~4-6 steps.
+RECURSION_LIMIT = 12
 
 
 @dataclass
@@ -56,7 +68,9 @@ def build_agent(session: AsyncSession, model: BaseChatModel):
     """Build a per-request agent over the search tools, closing over a fresh
     TurnContext. Returns (agent, turn_context)."""
     turn = TurnContext()
-    tools = build_agent_tools(session, on_results=turn.record_shops)
+    tools = build_agent_tools(
+        session, on_results=turn.record_shops, max_searches=DEFAULT_MAX_SEARCHES
+    )
 
     async def present_recommendations(cafe_ids: list[int], rationale: str = "") -> str:
         turn.declared_ids = list(cafe_ids)
@@ -98,8 +112,14 @@ async def run_chat(
     present_recommendations."""
     agent, turn = build_agent(session, model)
     messages = [*(history or []), HumanMessage(content=message)]
-    out = await agent.ainvoke({"messages": messages})
-    reply = _last_ai_text(out["messages"])
+    try:
+        out = await agent.ainvoke(
+            {"messages": messages}, config={"recursion_limit": RECURSION_LIMIT}
+        )
+        reply = _last_ai_text(out["messages"])
+    except GraphRecursionError:
+        # Backstop tripped — still return the grounded payload we accumulated.
+        reply = ""
     return reply, turn.recommendations()
 
 
@@ -125,21 +145,28 @@ async def stream_chat(
     agent, turn = build_agent(session, model)
     messages = [*(history or []), HumanMessage(content=message)]
     reply = ""
-    async for ev in agent.astream_events({"messages": messages}, version="v2"):
-        etype = ev["event"]
-        data = ev.get("data", {})
-        if etype == "on_chat_model_end":
-            out = data.get("output")
-            content = getattr(out, "content", "") or ""
-            text = content if isinstance(content, str) else str(content)
-            if getattr(out, "tool_calls", None):
-                if text:
-                    yield "thought", {"text": text}
-            else:
-                reply = text  # an AI message with no tool calls is the final answer
-        elif etype == "on_tool_start":
-            yield "action", {"tool": ev.get("name"), "input": data.get("input")}
-        elif etype == "on_tool_end":
-            output = _tool_output_str(data.get("output"))
-            yield "observation", {"tool": ev.get("name"), "output": output}
+    try:
+        async for ev in agent.astream_events(
+            {"messages": messages}, version="v2", config={"recursion_limit": RECURSION_LIMIT}
+        ):
+            etype = ev["event"]
+            data = ev.get("data", {})
+            if etype == "on_chat_model_end":
+                out = data.get("output")
+                content = getattr(out, "content", "") or ""
+                text = content if isinstance(content, str) else str(content)
+                if getattr(out, "tool_calls", None):
+                    if text:
+                        yield "thought", {"text": text}
+                else:
+                    reply = text  # an AI message with no tool calls is the final answer
+            elif etype == "on_tool_start":
+                yield "action", {"tool": ev.get("name"), "input": data.get("input")}
+            elif etype == "on_tool_end":
+                output = _tool_output_str(data.get("output"))
+                yield "observation", {"tool": ev.get("name"), "output": output}
+    except GraphRecursionError:
+        # Backstop tripped — stop streaming steps and fall through to the final
+        # event, which is still guaranteed below.
+        pass
     yield "final", {"reply": reply, "recommendations": turn.recommendations()}

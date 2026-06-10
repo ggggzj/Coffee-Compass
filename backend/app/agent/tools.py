@@ -58,10 +58,14 @@ def _shop_summary(r) -> dict:
     }
 
 
+DEFAULT_MAX_SEARCHES = 3
+
+
 def build_agent_tools(
     session: AsyncSession,
     *,
     on_results: Callable[[list[dict]], None] | None = None,
+    max_searches: int = DEFAULT_MAX_SEARCHES,
 ) -> list[BaseTool]:
     """Build the agent's tools, closing over this request's database session.
 
@@ -71,9 +75,23 @@ def build_agent_tools(
     ``on_results`` is invoked with each search_shops result batch so the agent
     layer can track which cafes were surfaced this turn (for grounded
     recommendations + the guaranteed-final fallback).
-    """
 
-    async def search_shops(query: str, top_k: int = 5) -> list[dict]:
+    ``max_searches`` hard-caps how many real searches one turn may run. Past the
+    cap, search_shops short-circuits with a message telling the model to stop and
+    present what it has — preventing the synonym-retry loop where an LLM re-runs
+    the same search reworded ("cheap" -> "affordable" -> ...).
+    """
+    search_count = 0
+
+    async def search_shops(query: str, top_k: int = 5) -> list[dict] | str:
+        nonlocal search_count
+        if search_count >= max_searches:
+            return (
+                f"Search limit reached ({max_searches} searches this turn). Do NOT "
+                "search again or reword the query. Present the cafes you have "
+                "already found — fewer than 3 is fine."
+            )
+        search_count += 1
         outcome = await search_cafes(query=query, top_k=top_k, session=session)
         summaries = [_shop_summary(r) for r in outcome.results]
         if on_results is not None:

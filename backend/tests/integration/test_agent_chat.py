@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.db import get_session
 from app.main import app
+from app.search.slot_extractor import ParsedQuery
 from tests.integration.agent_helpers import (
     FakeToolCallingModel,
     calls,
@@ -106,3 +107,35 @@ async def test_agent_chat_drops_ungrounded_declared_ids(pgvector_url, monkeypatc
 
     ids = [c["id"] for c in data["recommendations"]]
     assert ids == [1]  # 999 was never surfaced by a tool, so it is dropped
+
+
+@pytest.mark.asyncio
+async def test_agent_cannot_exceed_search_budget(session, monkeypatch):
+    # A misbehaving model that keeps re-searching with synonyms must not run more
+    # than the budget of real searches (the synonym-retry loop the live smoke hit).
+    from app.agent.react_agent import run_chat
+    from app.agent.tools import DEFAULT_MAX_SEARCHES
+
+    real_searches = {"n": 0}
+
+    async def counting_extract(**kwargs):
+        real_searches["n"] += 1
+        return ParsedQuery(semantic_query="x", has_outlet=None, open_now=None, price_max=None)
+
+    monkeypatch.setattr("app.search.service.extract_slots", counting_extract)
+    monkeypatch.setattr("app.search.embedder.Embedder.embed", fake_embed)
+
+    session.add(seed_cafe(google_place_id="A", name="Bricks"))
+    await session.commit()
+
+    synonyms = ["cheap", "affordable", "inexpensive", "budget", "low-cost"]
+    scripted = [calls("search_shops", {"query": q}, f"c{i}") for i, q in enumerate(synonyms)]
+    scripted.append(final("Here is what I found."))
+    model = FakeToolCallingModel(responses=scripted)
+
+    reply, recs = await run_chat(session=session, model=model, message="anything cheaper?")
+
+    # The model called search_shops 5 times, but real searches are hard-capped.
+    assert real_searches["n"] <= DEFAULT_MAX_SEARCHES
+    # The turn still resolves with grounded recommendations (Bricks was surfaced).
+    assert [r["name"] for r in recs] == ["Bricks"]
