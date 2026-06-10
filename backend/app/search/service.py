@@ -7,6 +7,7 @@ from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.models import Cafe
 from app.observability import Timer
 from app.search.cache import TTLLRUCache
 from app.search.embedder import Embedder
@@ -35,6 +36,15 @@ def reset_slot_cache() -> None:
 def _openai_client() -> AsyncOpenAI:
     settings = get_settings()
     return AsyncOpenAI(api_key=settings.openai_api_key)
+
+
+async def get_cafe(*, cafe_id: int, session: AsyncSession) -> Cafe | None:
+    """Load a single Cafe by id, or None if it does not exist.
+
+    Shared by the get_shop_detail agent tool and the GET /cafes/{id} route so
+    there is one cafe-by-id load path.
+    """
+    return await session.get(Cafe, cafe_id)
 
 
 @dataclass(frozen=True)
